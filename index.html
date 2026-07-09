@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Piricat energies - Electricitat i Lampisteria al Pallars Sobirà</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --p-dark: #0f172a;
+            --p-blue: #2563eb;
+            --p-blue-hover: #1d4ed8;
+            --p-amber: #f59e0b;
+            --p-red: #dc2626;
+            --p-whatsapp: #25d366;
+            --p-whatsapp-hover: #22c35e;
+            --p-gray-light: #f8fafc;
+            --p-border: #e2e8f0;
+            --p-text-muted: #64748b;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            color: var(--p-dark);
+            background-color: #ffffff;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        html { scroll-behavior: smooth; }
+
+        .global-container {
+            max-width: 1140px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+            box-sizing: border-box;
+        }
+
+        /* 1. Baner d'Urgències */
+        .emergency-top-bar {
+            background-color: var(--p-red);
+            color: #ffffff;
+            padding: 0.6rem 1rem;
+            font-size: 0.88rem;
+        }
+        .emergency-container {
+            max-width: 1140px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+        .emergency-container p { margin: 0; font-weight: 500; }
+        
+        .pulse-icon {
+            width: 8px;
+            height: 8px;
+            background-color: #ffffff;
+            border-radius: 50%;
+            display: inline-block;
+            animation: pulse-anim 1.5s infinite;
+        }
+        @keyframes pulse-anim {
+            0% { transform: scale(0.9); opacity: 1; }
+            50% { transform: scale(1.3); opacity: 0.5; }
+            100% { transform: scale(0.9); opacity: 1; }
+        }
+
+        /* 2. Barra de Navegació */
+        .public-navbar {
+            background-color: #ffffff;
+            border-bottom: 1px solid var(--p-border);
+            padding: 1rem 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        .nav-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .brand-logo {
+            font-size: 1.3rem;
+            font-weight: 800;
+            color: var(--p-dark);
+            text-decoration: none;
+        }
+        .brand-logo span { color: var(--p-blue); }
+        .nav-menu { display: flex; gap: 1.5rem; align-items: center; }
+        .nav-link {
+            text-decoration: none;
+            color: #475569;
+            font-size: 0.95rem;
+            font-weight: 600;
+            transition: color 0.15s;
+        }
+        .nav-link:hover { color: var(--p-blue); }
+
+        /* 3. Hero Section */
+        .hero-section {
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            color: #ffffff;
+            padding: 6rem 0;
+        }
+        .hero-content { max-width: 650px; }
+        .badge-local {
+            display: inline-block;
+            background-color: rgba(37, 99, 235, 0.15);
+            color: #3b82f6;
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+        }
+        .hero-section h1 {
+            font-size: 3.2rem;
+            font-weight: 800;
+            margin: 0 0 1rem 0;
+            letter-spacing: -1px;
+            line-height: 1.1;
+        }
+        .hero-subtitle {
+            font-size: 1.15rem;
+            color: #94a3b8;
+            line-height: 1.6;
+            margin: 0 0 2.5rem 0;
+        }
+
+        /* 4. Serveis */
+        .services-section { padding: 5rem 0; background-color: var(--p-gray-light); }
+        .section-header { text-align: center; margin-bottom: 3.5rem; }
+        .section-header h2 { font-size: 2rem; color: var(--p-dark); margin: 0; font-weight: 700; }
+        .section-header p { color: var(--p-text-muted); margin-top: 0.5rem; }
+        .services-dual-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 2.5rem;
+        }
+        .services-category-card {
+            background: #ffffff;
+            border: 1px solid var(--p-border);
+            border-radius: 12px;
+            padding: 2.5rem;
+        }
+        .category-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.4rem;
+            font-weight: 700;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid var(--p-gray-light);
+        }
+        .category-title.elec { color: #b45309; }
+        .category-title.lamp { color: #1d4ed8; }
+        
+        .services-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 12px; }
+        .services-list li { display: flex; align-items: flex-start; gap: 10px; font-size: 0.98rem; color: #334155; }
+        .services-list .dot {
+            width: 6px;
+            height: 6px;
+            background-color: var(--p-blue);
+            border-radius: 50%;
+            margin-top: 7px;
+            flex-shrink: 0;
+        }
+        .category-title.elec + .services-list .dot { background-color: var(--p-amber); }
+
+        /* 5. Secció Contacte (Modernitzada amb Grid de Botons) */
+        .contact-section { padding: 5rem 0; background-color: #ffffff; text-align: center; }
+        .contact-section h2 { font-size: 2.2rem; margin: 0 0 0.5rem 0; }
+        .contact-buttons-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 1.5rem;
+            margin-top: 3rem;
+        }
+        
+        .cta-box {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 2.5rem 1.5rem;
+            border-radius: 12px;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 1.2rem;
+            transition: transform 0.2s, box-shadow 0.2s;
+            border: 1px solid var(--p-border);
+        }
+        .cta-box:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+        }
+
+        /* Estils específics dels botons de contacte */
+        .cta-box.phone { background-color: var(--p-blue); color: #ffffff; border: none; }
+        .cta-box.phone:hover { background-color: var(--p-blue-hover); }
+        
+        .cta-box.whatsapp { background-color: var(--p-whatsapp); color: #ffffff; border: none; }
+        .cta-box.whatsapp:hover { background-color: var(--p-whatsapp-hover); }
+        
+        .cta-box.email { background-color: #ffffff; color: var(--p-dark); }
+        .cta-box.email:hover { border-color: var(--p-dark); }
+
+        .cta-box small {
+            font-size: 0.8rem;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+            opacity: 0.9;
+        }
+        .cta-box.email small { color: var(--p-text-muted); }
+
+        .public-footer {
+            background-color: var(--p-dark);
+            color: #94a3b8;
+            padding: 2rem 0;
+            font-size: 0.9rem;
+            text-align: center;
+            margin-top: 2rem;
+        }
+
+        @media (max-width: 600px) {
+            .hero-section h1 { font-size: 2.2rem; }
+            .nav-menu { display: none; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- BANER D'URGÈNCIES -->
+    <div class="emergency-top-bar">
+        <div class="emergency-container">
+            <span class="pulse-icon"></span>
+            <p><strong>Avaries i Urgències:</strong> Solucions ràpides directament a la teva llar o negoci</p>
+        </div>
+    </div>
+
+    <!-- NAVBAR PÚBLICA -->
+    <nav class="public-navbar">
+        <div class="global-container nav-container">
+            <a href="#" class="brand-logo">Piricat <span>energies</span></a>
+            <div class="nav-menu">
+                <a href="#serveis" class="nav-link">Serveis</a>
+                <a href="#contacte" class="nav-link">Contactar</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- HERO SECTION -->
+    <header class="hero-section">
+        <div class="global-container">
+            <div class="hero-content">
+                <span class="badge-local">📍 Sort i tot el Pallars Sobirà</span>
+                <h1>Piricat energies</h1>
+                <p class="hero-subtitle">Professionals de total confiança en electricitat i lampisteria. Responem immediatament per resoldre les teves instal·lacions, tasques de manteniment o reparacions urgents.</p>
+                <div class="nav-menu" style="gap: 12px;">
+                    <a href="#contacte" class="btn-nav-cta" style="background-color: var(--p-blue); color: #fff; padding: 12px 24px; border-radius: 6px; text-decoration: none; font-weight: 600;">Contactar Ara</a>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- SECCIÓ SERVEIS -->
+    <section id="serveis" class="services-section">
+        <div class="global-container">
+            <div class="section-header">
+                <h2>Què podem fer per tu?</h2>
+                <p>Oferim cobertura completa amb la màxima celeritat i eficàcia de la comarca.</p>
+            </div>
+
+            <div class="services-dual-grid">
+                <!-- ELECTRICITAT -->
+                <div class="services-category-card">
+                    <div class="category-title elec">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"></polygon></svg>
+                        <span>Electricitat</span>
+                    </div>
+                    <ul class="services-list">
+                        <li><span class="dot"></span>Instal·lacions elèctriques en habitatges i locals.</li>
+                        <li><span class="dot"></span>Reparació de talls elèctrics i curtcircuits.</li>
+                        <li><span class="dot"></span>Manteniment i sanejament de quadres elèctrics.</li>
+                        <li><span class="dot"></span>Canvis d'endolls, interruptors i il·luminació LED.</li>
+                        <li><span class="dot"></span>Instal·lació i configuració de sistemes de domòtica.</li>
+                        <li><span class="dot"></span>Manteniment i plaques solars.</li>
+                    </ul>
+                </div>
+
+                <!-- LAMPISTERIA -->
+                <div class="services-category-card">
+                    <div class="category-title lamp">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22a7 7 0 0 0 7-7c0-4.3-7-11-7-11S5 10.7 5 15a7 7 0 0 0 7 7z"></path></svg>
+                        <span>Lampisteria</span>
+                    </div>
+                    <ul class="services-list">
+                        <li><span class="dot"></span>Reparació immediata de fuites d'aigua i humitats.</li>
+                        <li><span class="dot"></span>Desembussos urgents de canonades i desguassos.</li>
+                        <li><span class="dot"></span>Instal·lació i substitució d'aixetes i sanitaris.</li>
+                        <li><span class="dot"></span>Muntatge de termos elèctrics, calderes i escalfadors.</li>
+                        <li><span class="dot"></span>Sanejament complet de xarxes d'aigua domèstiques.</li>
+                        <li><span class="dot"></span>Manteniments preventius per a particulars i comunitats.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SECCIÓ CONTACTE DIRECTE (SENSE FORMULARIS) -->
+    <section id="contacte" class="contact-section">
+        <div class="global-container">
+            <h2>Posa't en contacte al moment</h2>
+            <p style="color: var(--p-text-muted); max-width: 600px; margin: 0 auto;">No t'esperis més. Fes clic a qualsevol de les nostres vies de contacte directe i t'atendrem encantats sense cap mena de compromís.</p>
+            
+            <div class="contact-buttons-grid">
+                
+                <!-- Trucada Directa -->
+                <a href="tel:+34613952956" class="cta-box phone">
+                    <small>Truca'ns ara mateix</small>
+                    <span>+34 613 95 29 56</span>
+                </a>
+
+                <!-- WhatsApp Directe -->
+                <a href="https://wa.me/34613952956?text=Hola!%20Necessito%20assit%C3%A8ncia%20de%20Piricat%20energies..." target="_blank" class="cta-box whatsapp">
+                    <small>Escriu-nos per WhatsApp</small>
+                    <span>Obrir Xat Directe</span>
+                </a>
+
+                <!-- Correu Electrònic -->
+                <a href="mailto:borrasgenis@gmail.com" class="cta-box email">
+                    <small>Envia un correu electrònic</small>
+                    <span>borrasgenis@gmail.com</span>
+                </a>
+
+            </div>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="public-footer">
+        <div class="global-container">
+            <p>&copy; 2026 Piricat energies. Empresa local de Sort, Pallars Sobirà.</p>
+        </div>
+    </footer>
+
+</body>
+</html>
