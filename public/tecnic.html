@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>La meva cua — Piricat Energies</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/global.css">
+<link rel="stylesheet" href="css/admin.css">
+</head>
+<body class="admin-body">
+
+<!-- Pantalla 1: seleccionar quin tècnic ets (si la URL no ho especifica) -->
+<div class="selector-shell" id="selector-shell" style="display:none;">
+  <h1>Qui ets?</h1>
+  <p>Selecciona el teu nom per veure la teva cua de feines.</p>
+  <div class="selector-list" id="selector-list"></div>
+</div>
+
+<!-- Pantalla 2: l'app de feines del tècnic -->
+<div class="tecnic-shell" id="tecnic-shell" style="display:none;">
+  <div class="admin-header" style="position:static;">
+    <div class="brand">
+      <span class="brand-mark">⚡</span>
+      <div>Piricat Energies<small>App del tècnic</small></div>
+    </div>
+    <a class="canvia-tecnic" id="link-canviar">Canviar d'usuari</a>
+  </div>
+
+  <div class="tecnic-hero">
+    <div class="hola">Bon dia,</div>
+    <h1 id="nom-tecnic">—</h1>
+    <div class="estat-toggle" id="estat-toggle" data-estat="lliure">
+      <div>
+        <div class="label">El teu estat actual</div>
+        <div class="valor" id="estat-valor">LLIURE</div>
+      </div>
+      <div class="status-pill" id="estat-pill"><span class="dot"></span><span id="estat-pill-text">Lliure</span></div>
+    </div>
+  </div>
+
+  <div class="cua-section">
+    <div class="cua-titol">
+      <h2>La teva cua d'avisos</h2>
+      <span class="comptador" id="comptador-cua">0 actius</span>
+    </div>
+    <div id="llista-tickets"></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="js/operari.js"></script>
+</body>
+</html>
