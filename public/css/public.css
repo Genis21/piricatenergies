@@ -1,0 +1,438 @@
+/* =====================================================================
+   PIRICAT ENERGIES — public.css
+   Landing de cara al client final. Identitat clara i càlida, contrastada
+   amb una franja "nocturna" (pi fosc) per al bloc del funcionament.
+   ===================================================================== */
+
+.top-bar {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px clamp(20px, 5vw, 64px);
+  background: rgba(250, 248, 243, 0.85);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--stone-300);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 800;
+  font-size: 1.05rem;
+  letter-spacing: -0.01em;
+}
+
+.brand .brand-mark {
+  width: 34px; height: 34px;
+  border-radius: 9px;
+  background: linear-gradient(155deg, var(--copper) 0%, var(--copper-dark) 100%);
+  display: flex; align-items: center; justify-content: center;
+  color: #fff;
+  font-size: 1.1rem;
+}
+
+.top-bar nav {
+  display: flex;
+  gap: 28px;
+  font-size: 0.92rem;
+  font-weight: 600;
+  color: var(--text-muted);
+}
+
+.top-bar nav a:hover { color: var(--text-ink); }
+
+.top-bar .phone-pill {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 16px;
+  border-radius: 999px;
+  background: var(--pine-900);
+  color: var(--text-inverse);
+  font-family: var(--font-mono);
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+
+.top-bar .phone-pill .dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: var(--ice);
+  box-shadow: 0 0 0 3px rgba(73, 198, 180, 0.25);
+}
+
+/* ---------------- HERO ---------------- */
+.hero {
+  position: relative;
+  padding: clamp(60px, 10vw, 120px) clamp(20px, 6vw, 64px) 80px;
+  overflow: hidden;
+  background:
+    radial-gradient(1100px 480px at 85% -10%, rgba(226, 128, 58, 0.14), transparent 60%),
+    var(--stone-100);
+}
+
+.hero .contour {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.hero-inner {
+  position: relative;
+  z-index: 1;
+  max-width: 1160px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: 1.15fr 0.85fr;
+  gap: 56px;
+  align-items: center;
+}
+
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: var(--copper-dark);
+  background: rgba(226, 128, 58, 0.12);
+  padding: 7px 12px;
+  border-radius: 999px;
+  margin-bottom: 22px;
+}
+
+.hero h1 {
+  font-size: clamp(2.3rem, 4.6vw, 3.6rem);
+  line-height: 1.06;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  color: var(--pine-900);
+}
+
+.hero h1 em {
+  font-style: normal;
+  color: var(--copper);
+}
+
+.hero .lead {
+  margin-top: 22px;
+  font-size: 1.13rem;
+  line-height: 1.6;
+  color: var(--text-muted);
+  max-width: 46ch;
+}
+
+.hero-actions {
+  margin-top: 34px;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  flex-wrap: wrap;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 15px 26px;
+  border-radius: var(--radius-s);
+  font-weight: 700;
+  font-size: 0.98rem;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.btn-primary {
+  background: var(--pine-900);
+  color: var(--text-inverse);
+  box-shadow: var(--shadow-soft);
+}
+
+.btn-primary:hover { transform: translateY(-2px); }
+
+.btn-ghost {
+  color: var(--pine-900);
+  font-weight: 700;
+  border-bottom: 2px solid var(--stone-300);
+  padding-left: 0; padding-right: 0;
+}
+
+.btn-ghost:hover { border-color: var(--copper); }
+
+/* Card telefon dins el hero */
+.hero-card {
+  position: relative;
+  background: var(--pine-900);
+  color: var(--text-inverse);
+  border-radius: var(--radius-l);
+  padding: 34px 30px;
+  box-shadow: var(--shadow-soft);
+}
+
+.hero-card .badge-live {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-mono);
+  font-size: 0.76rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ice-light);
+}
+
+.hero-card .badge-live .dot {
+  width: 8px; height: 8px; border-radius: 50%;
+  background: var(--ice);
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(73,198,180,0.5); }
+  50% { box-shadow: 0 0 0 6px rgba(73,198,180,0); }
+}
+
+.hero-card .phone-number {
+  font-family: var(--font-mono);
+  font-size: clamp(1.8rem, 3vw, 2.3rem);
+  font-weight: 700;
+  margin-top: 14px;
+  letter-spacing: -0.01em;
+}
+
+.hero-card .phone-caption {
+  margin-top: 8px;
+  color: var(--text-inverse-muted);
+  font-size: 0.92rem;
+  line-height: 1.5;
+}
+
+.hero-card .steps {
+  margin-top: 26px;
+  border-top: 1px solid rgba(255,255,255,0.12);
+  padding-top: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.hero-card .step {
+  display: flex;
+  gap: 12px;
+  font-size: 0.88rem;
+  color: var(--text-inverse-muted);
+}
+
+.hero-card .step .num {
+  font-family: var(--font-mono);
+  color: var(--copper-light);
+  font-weight: 700;
+}
+
+/* ---------------- SERVEIS ---------------- */
+.section {
+  padding: 84px clamp(20px, 6vw, 64px);
+  max-width: 1160px;
+  margin: 0 auto;
+}
+
+.section-head {
+  max-width: 640px;
+  margin-bottom: 48px;
+}
+
+.section-head .eyebrow { margin-bottom: 16px; }
+
+.section-head h2 {
+  font-size: clamp(1.7rem, 3vw, 2.3rem);
+  font-weight: 800;
+  letter-spacing: -0.015em;
+  color: var(--pine-900);
+}
+
+.section-head p {
+  margin-top: 14px;
+  color: var(--text-muted);
+  font-size: 1.03rem;
+  line-height: 1.6;
+}
+
+.services-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+}
+
+.service-card {
+  background: #fff;
+  border: 1px solid var(--stone-300);
+  border-radius: var(--radius-m);
+  padding: 30px;
+  transition: border-color 0.2s ease, transform 0.2s ease;
+}
+
+.service-card:hover {
+  border-color: var(--copper);
+  transform: translateY(-3px);
+}
+
+.service-card .icon {
+  width: 46px; height: 46px;
+  border-radius: 12px;
+  background: var(--stone-200);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--copper-dark);
+  margin-bottom: 18px;
+}
+
+.service-card h3 {
+  font-size: 1.08rem;
+  font-weight: 700;
+  color: var(--pine-900);
+}
+
+.service-card p {
+  margin-top: 8px;
+  font-size: 0.92rem;
+  color: var(--text-muted);
+  line-height: 1.55;
+}
+
+/* ---------------- COBERTURA (comarques) ---------------- */
+.coverage {
+  background: var(--pine-900);
+  color: var(--text-inverse);
+}
+
+.coverage .section-head h2,
+.coverage .section-head .eyebrow { color: var(--text-inverse); }
+.coverage .section-head .eyebrow { background: rgba(255,255,255,0.1); color: var(--copper-light); }
+.coverage .section-head p { color: var(--text-inverse-muted); }
+
+.coverage-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+.coverage-card {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: var(--radius-m);
+  padding: 22px;
+}
+
+.coverage-card .comarca-name {
+  font-weight: 700;
+  font-size: 1.02rem;
+}
+
+.coverage-card .magatzem {
+  margin-top: 6px;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  color: var(--ice-light);
+}
+
+.coverage-card .magatzem::before { content: '📦 '; }
+
+/* ---------------- FUNCIONAMENT (timeline) ---------------- */
+.flow-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 18px;
+}
+
+.flow-step {
+  position: relative;
+  padding: 26px 20px 22px;
+  background: var(--stone-200);
+  border-radius: var(--radius-m);
+}
+
+.flow-step .flow-num {
+  font-family: var(--font-mono);
+  font-weight: 700;
+  color: var(--copper-dark);
+  font-size: 0.85rem;
+}
+
+.flow-step h4 {
+  margin-top: 12px;
+  font-size: 0.98rem;
+  font-weight: 700;
+  color: var(--pine-900);
+}
+
+.flow-step p {
+  margin-top: 8px;
+  font-size: 0.86rem;
+  color: var(--text-muted);
+  line-height: 1.5;
+}
+
+/* ---------------- CTA final ---------------- */
+.cta-final {
+  text-align: center;
+  padding: 90px clamp(20px, 6vw, 64px) 110px;
+}
+
+.cta-final h2 {
+  font-size: clamp(1.7rem, 3.4vw, 2.5rem);
+  font-weight: 800;
+  color: var(--pine-900);
+  letter-spacing: -0.02em;
+  max-width: 640px;
+  margin: 0 auto;
+}
+
+.cta-final .phone-number-big {
+  display: inline-block;
+  margin-top: 26px;
+  font-family: var(--font-mono);
+  font-size: clamp(2.1rem, 5vw, 3rem);
+  font-weight: 700;
+  color: var(--copper-dark);
+  letter-spacing: -0.01em;
+}
+
+.cta-final p.hint {
+  margin-top: 10px;
+  color: var(--text-muted);
+  font-size: 0.92rem;
+}
+
+.cta-final .btn-primary { margin-top: 26px; }
+
+/* ---------------- FOOTER ---------------- */
+footer.site-footer {
+  border-top: 1px solid var(--stone-300);
+  padding: 34px clamp(20px, 6vw, 64px);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.84rem;
+  color: var(--text-muted);
+}
+
+footer.site-footer a { font-weight: 600; color: var(--pine-900); }
+
+/* ---------------- RESPONSIVE ---------------- */
+@media (max-width: 900px) {
+  .top-bar nav { display: none; }
+  .hero-inner { grid-template-columns: 1fr; }
+  .services-grid { grid-template-columns: 1fr; }
+  .coverage-grid { grid-template-columns: repeat(2, 1fr); }
+  .flow-grid { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 560px) {
+  .coverage-grid { grid-template-columns: 1fr; }
+  .flow-grid { grid-template-columns: 1fr; }
+  footer.site-footer { flex-direction: column; gap: 10px; text-align: center; }
+}
