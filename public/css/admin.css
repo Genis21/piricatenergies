@@ -1,0 +1,578 @@
+/* =====================================================================
+   PIRICAT ENERGIES — admin.css
+   Tema fosc compartit pel panell de la central (privat.html) i l'app
+   del tècnic (tecnic.html). Textura de línies de nivell molt subtil
+   de fons, pensada per a pantalles de control i mòbil.
+   ===================================================================== */
+
+body.admin-body {
+  background:
+    radial-gradient(900px 500px at 100% 0%, rgba(226,128,58,0.08), transparent 60%),
+    var(--ink-950);
+  color: var(--text-inverse);
+  min-height: 100vh;
+}
+
+/* ---------------- Capçalera comuna ---------------- */
+.admin-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 18px clamp(16px, 4vw, 36px);
+  border-bottom: 1px solid var(--ink-border);
+  background: rgba(16, 25, 35, 0.7);
+  backdrop-filter: blur(8px);
+  position: sticky;
+  top: 0;
+  z-index: 30;
+}
+
+.admin-header .brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 800;
+}
+
+.admin-header .brand .brand-mark {
+  width: 32px; height: 32px;
+  border-radius: 8px;
+  background: linear-gradient(155deg, var(--copper) 0%, var(--copper-dark) 100%);
+  display: flex; align-items: center; justify-content: center;
+  color: #fff;
+  font-size: 1rem;
+}
+
+.admin-header .brand small {
+  display: block;
+  font-weight: 500;
+  font-size: 0.72rem;
+  color: var(--text-inverse-muted);
+  letter-spacing: 0.02em;
+}
+
+.admin-header .clock {
+  font-family: var(--font-mono);
+  font-size: 0.85rem;
+  color: var(--text-inverse-muted);
+}
+
+/* ---------------- Layout general privat.html ---------------- */
+.admin-layout {
+  display: grid;
+  grid-template-columns: 1.6fr 1fr;
+  gap: 22px;
+  padding: 26px clamp(16px, 4vw, 36px) 60px;
+  max-width: 1440px;
+  margin: 0 auto;
+  align-items: start;
+}
+
+.panel-title {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.panel-title h2 {
+  font-size: 1.15rem;
+  font-weight: 700;
+}
+
+.panel-title .sub {
+  font-size: 0.82rem;
+  color: var(--text-inverse-muted);
+  font-family: var(--font-mono);
+}
+
+/* ---------------- Graella de comarques ---------------- */
+.comarques-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px;
+}
+
+.comarca-card {
+  background: var(--ink-800);
+  border: 1px solid var(--ink-border);
+  border-radius: var(--radius-m);
+  padding: 18px;
+  transition: border-color 0.2s ease;
+}
+
+.comarca-card[data-estat="lliure"] { border-color: rgba(73, 198, 180, 0.45); }
+.comarca-card[data-estat="ocupat"] { border-color: rgba(229, 85, 90, 0.35); }
+
+.comarca-card .comarca-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+}
+
+.comarca-card h3 {
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.comarca-card .magatzem {
+  margin-top: 3px;
+  font-family: var(--font-mono);
+  font-size: 0.74rem;
+  color: var(--text-inverse-muted);
+}
+
+.status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 10px;
+  border-radius: 999px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-family: var(--font-mono);
+  white-space: nowrap;
+}
+
+.status-pill .dot { width: 6px; height: 6px; border-radius: 50%; }
+
+.status-pill.lliure { background: rgba(73,198,180,0.14); color: var(--ice-light); }
+.status-pill.lliure .dot { background: var(--ice); }
+
+.status-pill.ocupat { background: rgba(229,85,90,0.14); color: #ff9497; }
+.status-pill.ocupat .dot { background: var(--alert); }
+
+.status-pill.en_cua { background: rgba(242,181,68,0.14); color: var(--amber); }
+.status-pill.en_cua .dot { background: var(--amber); }
+
+.status-pill.assignada { background: rgba(226,128,58,0.16); color: var(--copper-light); }
+.status-pill.assignada .dot { background: var(--copper); }
+
+.status-pill.programada { background: rgba(139,148,255,0.14); color: #b9c0ff; }
+.status-pill.programada .dot { background: #8b94ff; }
+
+.comarca-card .tecnics-list {
+  margin-top: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.tecnic-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 9px 10px;
+  border-radius: var(--radius-s);
+  background: var(--ink-700);
+  font-size: 0.82rem;
+}
+
+.tecnic-row .tecnic-nom { font-weight: 600; }
+
+.tecnic-row .tecnic-cua {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--text-inverse-muted);
+}
+
+.comarca-card .veure-tiquets {
+  margin-top: 14px;
+  width: 100%;
+  text-align: center;
+  padding: 9px;
+  border-radius: var(--radius-s);
+  background: var(--ink-700);
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: var(--text-inverse-muted);
+}
+
+.comarca-card .veure-tiquets:hover { color: var(--text-inverse); background: var(--ink-600); }
+
+/* Llista de tiquets desplegada dins la comarca */
+.tiquets-detall {
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.tiquet-mini {
+  border: 1px solid var(--ink-border);
+  border-radius: var(--radius-s);
+  padding: 10px 12px;
+  font-size: 0.78rem;
+}
+
+.tiquet-mini .row1 {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+}
+
+.tiquet-mini .id { font-family: var(--font-mono); color: var(--copper-light); }
+.tiquet-mini .client { margin-top: 4px; font-weight: 600; }
+.tiquet-mini .desc { margin-top: 3px; color: var(--text-inverse-muted); line-height: 1.4; }
+.tiquet-mini .urgent-flag { color: var(--alert); font-weight: 700; }
+
+/* ---------------- Formulari nou avís ---------------- */
+.form-card {
+  background: var(--ink-800);
+  border: 1px solid var(--ink-border);
+  border-radius: var(--radius-m);
+  padding: 22px;
+  position: sticky;
+  top: 90px;
+}
+
+.form-card h2 {
+  font-size: 1.05rem;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.form-card .form-sub {
+  font-size: 0.8rem;
+  color: var(--text-inverse-muted);
+  margin-bottom: 18px;
+}
+
+.field {
+  margin-bottom: 14px;
+}
+
+.field label {
+  display: block;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text-inverse-muted);
+  margin-bottom: 6px;
+}
+
+.field input[type="text"],
+.field input[type="tel"],
+.field select,
+.field textarea {
+  width: 100%;
+  padding: 11px 12px;
+  border-radius: var(--radius-s);
+  border: 1px solid var(--ink-border);
+  background: var(--ink-900);
+  color: var(--text-inverse);
+  font-size: 0.9rem;
+}
+
+.field textarea { resize: vertical; min-height: 70px; }
+
+.field input:focus, .field select:focus, .field textarea:focus {
+  border-color: var(--copper);
+}
+
+.field-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+.checkbox-row {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  margin-bottom: 18px;
+  font-size: 0.85rem;
+  color: var(--text-inverse-muted);
+}
+
+.checkbox-row input { width: 16px; height: 16px; accent-color: var(--copper); }
+
+.btn-submit {
+  width: 100%;
+  padding: 13px;
+  border-radius: var(--radius-s);
+  background: var(--copper);
+  color: #1a0f04;
+  font-weight: 700;
+  font-size: 0.92rem;
+  transition: background 0.15s ease;
+}
+
+.btn-submit:hover { background: var(--copper-light); }
+.btn-submit:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.resposta-box {
+  margin-top: 14px;
+  padding: 12px 14px;
+  border-radius: var(--radius-s);
+  font-size: 0.85rem;
+  line-height: 1.5;
+  display: none;
+}
+
+.resposta-box.ok {
+  display: block;
+  background: rgba(73,198,180,0.12);
+  border: 1px solid rgba(73,198,180,0.35);
+  color: var(--ice-light);
+}
+
+.resposta-box.error {
+  display: block;
+  background: rgba(229,85,90,0.12);
+  border: 1px solid rgba(229,85,90,0.35);
+  color: #ff9497;
+}
+
+.resposta-box .msg-id { font-family: var(--font-mono); font-weight: 700; }
+
+/* =====================================================================
+   APP DEL TÈCNIC (tecnic.html) — mobile first
+   ===================================================================== */
+
+.tecnic-shell {
+  max-width: 520px;
+  margin: 0 auto;
+  padding: 0 0 100px;
+  min-height: 100vh;
+}
+
+.tecnic-hero {
+  padding: 20px 18px 18px;
+}
+
+.tecnic-hero .hola {
+  font-size: 0.85rem;
+  color: var(--text-inverse-muted);
+}
+
+.tecnic-hero h1 {
+  font-size: 1.3rem;
+  font-weight: 800;
+  margin-top: 4px;
+}
+
+.estat-toggle {
+  margin-top: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  border-radius: var(--radius-m);
+  background: var(--ink-800);
+  border: 1px solid var(--ink-border);
+}
+
+.estat-toggle .label {
+  font-size: 0.78rem;
+  color: var(--text-inverse-muted);
+}
+
+.estat-toggle .valor {
+  margin-top: 3px;
+  font-weight: 800;
+  font-size: 1.05rem;
+}
+
+.estat-toggle[data-estat="lliure"] .valor { color: var(--ice-light); }
+.estat-toggle[data-estat="ocupat"] .valor { color: #ff9497; }
+
+.canvia-tecnic {
+  font-size: 0.72rem;
+  color: var(--text-inverse-muted);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* Llista de la cua */
+.cua-section { padding: 6px 18px; }
+
+.cua-section .cua-titol {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin: 18px 0 12px;
+}
+
+.cua-section .cua-titol h2 { font-size: 0.95rem; font-weight: 700; }
+.cua-section .cua-titol .comptador {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  color: var(--text-inverse-muted);
+}
+
+.ticket-card {
+  background: var(--ink-800);
+  border: 1px solid var(--ink-border);
+  border-radius: var(--radius-m);
+  padding: 16px;
+  margin-bottom: 12px;
+}
+
+.ticket-card .tc-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.ticket-card .tc-id {
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  color: var(--copper-light);
+}
+
+.ticket-card .tc-client {
+  margin-top: 6px;
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.ticket-card .tc-tipus {
+  margin-top: 2px;
+  font-size: 0.78rem;
+  color: var(--text-inverse-muted);
+  text-transform: capitalize;
+}
+
+.ticket-card .tc-urgent {
+  display: inline-block;
+  margin-top: 8px;
+  padding: 3px 9px;
+  border-radius: 999px;
+  background: rgba(229,85,90,0.16);
+  color: #ff9497;
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.ticket-card .tc-desc {
+  margin-top: 10px;
+  font-size: 0.86rem;
+  line-height: 1.5;
+  color: #d6dee4;
+}
+
+.ticket-card .tc-info {
+  margin-top: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  font-size: 0.82rem;
+  color: var(--text-inverse-muted);
+}
+
+.ticket-card .tc-info a { color: var(--ice-light); font-family: var(--font-mono); }
+
+.ticket-card .tc-dia-actual {
+  margin-top: 10px;
+  font-size: 0.8rem;
+  color: #b9c0ff;
+  font-weight: 600;
+}
+
+.ticket-card .tc-actions {
+  margin-top: 14px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.tc-btn {
+  flex: 1 1 auto;
+  padding: 10px 8px;
+  border-radius: var(--radius-s);
+  background: var(--ink-700);
+  border: 1px solid var(--ink-border);
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--text-inverse);
+  text-align: center;
+  min-width: 78px;
+}
+
+.tc-btn:hover { background: var(--ink-600); }
+.tc-btn.active { background: rgba(139,148,255,0.16); border-color: #8b94ff; color: #b9c0ff; }
+
+.tc-btn-finalitzar {
+  flex-basis: 100%;
+  background: var(--copper);
+  color: #1a0f04;
+  border: none;
+}
+
+.tc-btn-finalitzar:hover { background: var(--copper-light); }
+
+.buit-state {
+  text-align: center;
+  padding: 50px 20px;
+  color: var(--text-inverse-muted);
+}
+
+.buit-state .emoji { font-size: 2.2rem; margin-bottom: 12px; }
+.buit-state h3 { color: var(--text-inverse); font-size: 1.02rem; margin-bottom: 6px; }
+.buit-state p { font-size: 0.85rem; line-height: 1.5; }
+
+/* Selector de tècnic (pantalla inicial) */
+.selector-shell {
+  max-width: 420px;
+  margin: 0 auto;
+  padding: 70px 22px;
+  text-align: center;
+}
+
+.selector-shell h1 { font-size: 1.3rem; font-weight: 800; margin-bottom: 6px; }
+.selector-shell p { color: var(--text-inverse-muted); font-size: 0.88rem; margin-bottom: 28px; }
+
+.selector-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.selector-btn {
+  padding: 16px;
+  border-radius: var(--radius-m);
+  background: var(--ink-800);
+  border: 1px solid var(--ink-border);
+  text-align: left;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.selector-btn:hover { border-color: var(--copper); }
+.selector-btn .nom { font-weight: 700; }
+.selector-btn .comarca-label { font-size: 0.76rem; color: var(--text-inverse-muted); margin-top: 3px; }
+
+/* Toast flotant */
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: 24px;
+  transform: translateX(-50%) translateY(120%);
+  background: var(--ink-700);
+  border: 1px solid var(--ink-border);
+  color: var(--text-inverse);
+  padding: 12px 18px;
+  border-radius: var(--radius-s);
+  font-size: 0.84rem;
+  box-shadow: var(--shadow-soft);
+  transition: transform 0.25s ease;
+  z-index: 60;
+  max-width: 90vw;
+}
+
+.toast.show { transform: translateX(-50%) translateY(0); }
+
+/* ---------------- Responsive admin ---------------- */
+@media (max-width: 980px) {
+  .admin-layout { grid-template-columns: 1fr; }
+  .form-card { position: static; }
+  .comarques-grid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 480px) {
+  .field-row { grid-template-columns: 1fr; }
+}
