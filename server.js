@@ -1,344 +1,392 @@
 /**
- * PIRICAT ENERGIES — server.js
- * ---------------------------------------------------------------
- * Backend Express que serveix la web publica, el panell privat de
- * la central (Sort) i l'app del tecnic, i que exposa l'API REST
- * que gestiona la logica "Smart-Queue":
+ * PIRICAT ENERGIES — Sistema de gestió de cues i incidències en temps real
+ * ---------------------------------------------------------------------
+ * Backend Node.js / Express.
  *
- *  1) La gestora crea un avis per a una comarca.
- *  2) Si hi ha un tecnic LLIURE a la comarca -> se li assigna
- *     immediatament (estat "assignada") i se li diu al client
- *     "Venim en menys d'una hora". El tecnic passa a OCUPAT.
- *  3) Si tots els tecnics de la comarca estan OCUPATS -> l'avis
- *     entra a la cua del tecnic amb menys feina (estat "en_cua")
- *     i es diu al client "En menys d'una hora rebra la informacio
- *     de quan vindra el tecnic".
- *  4) El tecnic, des del mobil, escull "Avui" / "Dema" / "Altre dia"
- *     per als avisos en cua (estat "programada").
- *  5) Quan el tecnic prem "Finalitzada" l'avis s'elimina de la cua
- *     activa. Si el tecnic es queda sense cap avis actiu, torna a
- *     l'estat LLIURE automaticament.
- *
- * Dades en memoria (sense base de dades externa) per simplicitat,
- * tal com demana l'especificacio del projecte.
- * ---------------------------------------------------------------
+ * Tot l'estat viu en memòria (arrays JS). No hi ha base de dades perquè
+ * l'objectiu és un prototip funcional immediat; el dia que calgui persistència
+ * només cal substituir els arrays `technicians` i `services` per consultes
+ * a una BD real, la resta de lògica no canvia.
  */
 
 const express = require('express');
-const path = require('path');
+const cors = require('cors');
 const crypto = require('crypto');
+const path = require('path');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
+app.use(cors());
 app.use(express.json());
+
+// Ruta absoluta: evita el "Cannot GET /..." quan el procés s'executa des
+// d'un working directory diferent (com passa en plataformes com Render).
 app.use(express.static(path.join(__dirname, 'public')));
 
-/* ================================================================
-   1. DADES MESTRES: LES 6 COMARQUES / NODES D'ESTOC
-   ================================================================ */
-const COMARQUES = [
-  { id: 'aran', nom: "Val d'Aran", magatzem: 'Vielha' },
-  { id: 'ribagorca', nom: 'Alta Ribagorça', magatzem: 'El Pont de Suert' },
-  { id: 'jussa', nom: 'Pallars Jussà', magatzem: 'Tremp' },
-  { id: 'sobira', nom: 'Pallars Sobirà', magatzem: 'Sort' },
-  { id: 'urgell', nom: 'Alt Urgell', magatzem: 'La Seu d\'Urgell' },
-  { id: 'andorra', nom: 'Andorra', magatzem: 'Andorra la Vella' }
-];
-const COMARCA_IDS = COMARQUES.map(c => c.id);
+// L'arrel "/" no té cap fitxer propi: redirigim al panell de la gestora.
+app.get('/', (req, res) => {
+  res.redirect('/privat.html');
+});
 
-/* ================================================================
-   2. TÈCNICS (1 o 2 per comarca, reben els avisos al mòbil)
-   ================================================================ */
-let tecnics = [
-  { id: 't-aran-1', nom: 'Jordi Barrau', comarca: 'aran', telefon: '600 111 222', estat: 'lliure' },
-  { id: 't-aran-2', nom: 'Aitor Casau', comarca: 'aran', telefon: '600 111 223', estat: 'lliure' },
-  { id: 't-ribagorca-1', nom: 'Martí Vidal', comarca: 'ribagorca', telefon: '600 222 333', estat: 'lliure' },
-  { id: 't-jussa-1', nom: 'Pau Farré', comarca: 'jussa', telefon: '600 333 444', estat: 'lliure' },
-  { id: 't-sobira-1', nom: 'Roger Sanmartí', comarca: 'sobira', telefon: '600 444 555', estat: 'lliure' },
-  { id: 't-sobira-2', nom: 'Laia Pujol', comarca: 'sobira', telefon: '600 444 556', estat: 'lliure' },
-  { id: 't-urgell-1', nom: 'Xavi Areny', comarca: 'urgell', telefon: '600 555 666', estat: 'lliure' },
-  { id: 't-andorra-1', nom: 'Marc Iglesias', comarca: 'andorra', telefon: '600 666 777', estat: 'lliure' }
+// ---------------------------------------------------------------------------
+// 1. DADES MESTRES: TÈCNICS I ZONES
+// ---------------------------------------------------------------------------
+// Cada tècnic té assignades una o més comarques. Quan la gestora crea un
+// servei per a una comarca concreta, el sistema busca automàticament quin
+// tècnic la té assignada i li envia el tiquet a la seva cua.
+
+const technicians = [
+  { id: 1, name: 'Jordi Mir', role: 'Lampista', zones: ['Pallars Sobirà'] },
+  { id: 2, name: 'Anna Solé', role: 'Electricista', zones: ['Pallars Sobirà'] },
+  { id: 3, name: 'Ferran Costa', role: 'Lampista / Electricista', zones: ['Andorra'] },
+  { id: 4, name: 'Laia Pujol', role: 'Electricista', zones: ['Alt Urgell'] },
+  { id: 5, name: 'Martí Areny', role: 'Lampista', zones: ['Alta Ribagorça'] },
+  { id: 6, name: 'Núria Farré', role: 'Electricista', zones: ['Pallars Jussà'] },
+  { id: 7, name: 'Guillem Barrau', role: 'Lampista / Electricista', zones: ["Vall d'Aran"] },
 ];
 
-/* ================================================================
-   3. TIQUETS (avisos de client) — array global en memòria
-   ================================================================ */
-let tickets = [];
-let historial = [];
-let comptadorTiquet = 1;
+// Llista de totes les comarques disponibles al formulari de la gestora, sense
+// duplicats (el Pallars Sobirà té 2 tècnics assignats, però només ha
+// d'aparèixer un cop al desplegable).
+const ALL_ZONES = [...new Set(technicians.flatMap((t) => t.zones))];
 
-function generarIdTiquet() {
-  const any = new Date().getFullYear();
-  const num = String(comptadorTiquet++).padStart(4, '0');
-  return `PC-${any}-${num}`;
+const DAY_OPTIONS = ['Avui', 'Demà', 'Altre dia'];
+const STATUS = { PENDENT: 'pendent', EN_PROCES: 'en_proces', FET: 'fet' };
+
+// ---------------------------------------------------------------------------
+// 2. ESTAT: SERVEIS (TIQUETS)
+// ---------------------------------------------------------------------------
+// Cada servei desa `createdAt` (mil·lisegons) en el moment de la seva creació.
+// Aquest camp és la clau de tota la regla FIFO: mai s'esborra ni es recalcula,
+// per tant l'ordre d'arribada real queda sempre garantit, independentment del
+// dia que el tècnic triï per fer la feina.
+
+/** @type {Array<Object>} */
+let services = [];
+
+// ---------------------------------------------------------------------------
+// UTILITATS
+// ---------------------------------------------------------------------------
+
+/** Tots els tècnics que cobreixen una comarca (normalment 1, però el Pallars
+ *  Sobirà en té 2: Jordi Mir i Anna Solé). */
+function findTechniciansForZone(zone) {
+  return technicians.filter((t) => t.zones.includes(zone));
 }
 
-/* ---- Dades de demostració perquè el panell no arrenqui buit ---- */
-function llavor() {
-  crearTiquet({
-    comarca: 'sobira',
-    client: { nom: 'Hostal Vall Ferrera', telefon: '973 620 100', poble: 'Alins', adreca: 'Ctra. de la Vall, 4' },
-    tipus: 'electricitat',
-    urgent: true,
-    descripcio: 'Tall de subministrament a la cuina, olor de cremat al quadre elèctric.'
-  });
-  crearTiquet({
-    comarca: 'aran',
-    client: { nom: 'Apartaments Eth Refugi', telefon: '973 640 200', poble: 'Vielha', adreca: 'Pas d\'Arró, 9' },
-    tipus: 'lampisteria',
-    urgent: false,
-    descripcio: 'Fuita d\'aigua sota el fregidor del pis 2n.'
-  });
-  crearTiquet({
-    comarca: 'aran',
-    client: { nom: 'Refugi de Montgarri', telefon: '973 640 987', poble: 'Naut Aran', adreca: 'Pla de Beret' },
-    tipus: 'electricitat',
-    urgent: false,
-    descripcio: 'Revisió del quadre general abans de la temporada d\'hivern.'
-  });
+/** Nombre de serveis actius d'un tècnic (pendents + en procés), per repartir
+ *  la feina de forma equilibrada quan una zona té més d'un tècnic. */
+function workloadForTechnician(technicianId) {
+  return services.filter(
+    (s) => s.technicianId === technicianId && s.status !== STATUS.FET
+  ).length;
 }
 
-/* ================================================================
-   4. LÒGICA "SMART-QUEUE"
-   ================================================================ */
+/**
+ * Tria a quin tècnic s'assigna un servei nou d'una zona concreta.
+ * Si només hi ha un tècnic a la zona, és directe. Si n'hi ha diversos
+ * (p. ex. Pallars Sobirà), s'assigna al que tingui menys feina activa
+ * en aquell moment; en cas d'empat, guanya l'ordre de la llista.
+ */
+function assignTechnicianForZone(zone) {
+  const candidates = findTechniciansForZone(zone);
+  if (candidates.length === 0) return null;
+  if (candidates.length === 1) return candidates[0];
 
-// Retorna els tiquets actius (no finalitzats) d'un tècnic
-function tiquetsActiusDe(tecnicId) {
-  return tickets.filter(t => t.tecnicId === tecnicId && t.estat !== 'finalitzada');
+  return candidates.reduce((least, current) =>
+    workloadForTechnician(current.id) < workloadForTechnician(least.id) ? current : least
+  );
 }
 
-// Crea un tiquet i l'assigna seguint la lògica Smart-Queue
-function crearTiquet({ comarca, client, tipus, urgent, descripcio }) {
-  const tecnicsComarca = tecnics.filter(t => t.comarca === comarca);
-  if (tecnicsComarca.length === 0) {
-    throw new Error('No hi ha cap tècnic donat d\'alta en aquesta comarca.');
+/** Retorna els serveis pendents d'un tècnic ordenats per data de creació ASC. */
+function pendingQueueForTechnician(technicianId) {
+  return services
+    .filter((s) => s.technicianId === technicianId && s.status === STATUS.PENDENT)
+    .sort((a, b) => a.createdAt - b.createdAt);
+}
+
+/** Servei que el tècnic té actualment "en procés" (com a màxim n'hi hauria d'haver un). */
+function activeServiceForTechnician(technicianId) {
+  return services.find((s) => s.technicianId === technicianId && s.status === STATUS.EN_PROCES) || null;
+}
+
+/**
+ * Calcula l'estat visible del tècnic per al panell de la gestora:
+ * "ocupat" si té algun servei en_proces, "lliure" en cas contrari.
+ */
+function technicianWithComputedStatus(tech) {
+  const active = activeServiceForTechnician(tech.id);
+  return {
+    ...tech,
+    status: active ? 'ocupat' : 'lliure',
+    currentService: active || null,
+    pendingCount: pendingQueueForTechnician(tech.id).length,
+  };
+}
+
+function serializeService(s) {
+  return { ...s };
+}
+
+// ---------------------------------------------------------------------------
+// 3. ENDPOINTS DE CONFIGURACIÓ (tècnics / zones) — per omplir selects al front
+// ---------------------------------------------------------------------------
+
+app.get('/api/config', (req, res) => {
+  // zoneTechnicians: { "Pallars Sobirà": ["Jordi Mir", "Anna Solé"], ... }
+  // Permet mostrar al formulari qui pot rebre el servei quan una zona té
+  // més d'un tècnic assignat.
+  const zoneTechnicians = {};
+  ALL_ZONES.forEach((zone) => {
+    zoneTechnicians[zone] = findTechniciansForZone(zone).map((t) => t.name);
+  });
+
+  res.json({
+    zones: ALL_ZONES,
+    zoneTechnicians,
+    dayOptions: DAY_OPTIONS,
+    technicians: technicians.map(technicianWithComputedStatus),
+  });
+});
+
+app.get('/api/technicians', (req, res) => {
+  res.json(technicians.map(technicianWithComputedStatus));
+});
+
+// ---------------------------------------------------------------------------
+// 4. GET /api/services — llistat (amb filtres opcionals)
+//    ?technicianId=1            -> només els serveis d'aquell tècnic
+//    ?status=pendent,en_proces  -> filtra per un o més estats (separats per coma)
+//    Sempre retorna ordenat per createdAt ASC (ordre estricte d'arribada).
+// ---------------------------------------------------------------------------
+
+app.get('/api/services', (req, res) => {
+  let result = [...services];
+
+  if (req.query.technicianId) {
+    const techId = Number(req.query.technicianId);
+    result = result.filter((s) => s.technicianId === techId);
   }
 
-  // 1) Busquem un tècnic LLIURE a la comarca
-  let tecnicAssignat = tecnicsComarca.find(t => t.estat === 'lliure');
-  let estatInicial;
-  let missatge;
-
-  if (tecnicAssignat) {
-    // El tècnic estava lliure -> se li assigna la feina a l'instant
-    tecnicAssignat.estat = 'ocupat';
-    estatInicial = 'assignada';
-    missatge = 'Venim en menys d\'una hora.';
-  } else {
-    // Tots ocupats -> entra a la cua del tècnic amb menys feina pendent
-    tecnicAssignat = tecnicsComarca
-      .slice()
-      .sort((a, b) => tiquetsActiusDe(a.id).length - tiquetsActiusDe(b.id).length)[0];
-    estatInicial = 'en_cua';
-    missatge = 'En menys d\'una hora rebrà la informació de quan vindrà el tècnic.';
+  if (req.query.status) {
+    const statuses = String(req.query.status).split(',').map((s) => s.trim());
+    result = result.filter((s) => statuses.includes(s.status));
   }
 
-  const tiquet = {
-    id: generarIdTiquet(),
-    comarca,
-    tecnicId: tecnicAssignat.id,
-    client: {
-      nom: (client && client.nom) || '',
-      telefon: (client && client.telefon) || '',
-      poble: (client && client.poble) || '',
-      adreca: (client && client.adreca) || ''
-    },
-    tipus: tipus || 'electricitat',
-    urgent: !!urgent,
-    descripcio: descripcio || '',
-    estat: estatInicial, // assignada | en_cua | programada | finalitzada
-    dia: null,           // avui | dema | altre_dia
-    dataAltra: null,     // text lliure quan dia === 'altre_dia'
-    dataCreacio: new Date().toISOString(),
-    dataProgramacio: null,
-    dataFinalitzacio: null
+  result.sort((a, b) => a.createdAt - b.createdAt);
+
+  res.json(result.map(serializeService));
+});
+
+// ---------------------------------------------------------------------------
+// 5. POST /api/services — la gestora dona d'alta un nou servei
+// ---------------------------------------------------------------------------
+
+app.post('/api/services', (req, res) => {
+  const { clientName, address, description, zone } = req.body || {};
+
+  // Validació obligatòria dels 4 camps del formulari.
+  const missing = [];
+  if (!clientName || !clientName.trim()) missing.push('clientName');
+  if (!address || !address.trim()) missing.push('address');
+  if (!description || !description.trim()) missing.push('description');
+  if (!zone || !zone.trim()) missing.push('zone');
+
+  if (missing.length) {
+    return res.status(400).json({
+      error: 'Falten camps obligatoris.',
+      missing,
+    });
+  }
+
+  const technician = assignTechnicianForZone(zone);
+  if (!technician) {
+    return res.status(400).json({
+      error: `No hi ha cap tècnic assignat a la comarca "${zone}".`,
+    });
+  }
+
+  const newService = {
+    id: crypto.randomUUID(),
+    clientName: clientName.trim(),
+    address: address.trim(),
+    description: description.trim(),
+    zone,
+    technicianId: technician.id,
+    assignedDay: null, // el tècnic el triarà des de tecnic.html
+    status: STATUS.PENDENT,
+    createdAt: Date.now(), // <- base de tota la regla FIFO
+    startedAt: null,
+    finishedAt: null,
   };
 
-  tickets.push(tiquet);
-  return { tiquet, missatge, tecnic: tecnicAssignat };
-}
+  services.push(newService);
 
-// El tècnic escull quan farà una feina en cua
-function programarTiquet(id, dia, dataAltra) {
-  const tiquet = tickets.find(t => t.id === id);
-  if (!tiquet) return null;
-  if (!['avui', 'dema', 'altre_dia'].includes(dia)) {
-    throw new Error('Dia no vàlid. Ha de ser "avui", "dema" o "altre_dia".');
-  }
-  tiquet.dia = dia;
-  tiquet.dataAltra = dia === 'altre_dia' ? (dataAltra || '') : null;
-  tiquet.estat = 'programada';
-  tiquet.dataProgramacio = new Date().toISOString();
-  return tiquet;
-}
-
-// El tècnic finalitza un avís: surt de la cua i, si es buida, torna a LLIURE
-function finalitzarTiquet(id) {
-  const idx = tickets.findIndex(t => t.id === id);
-  if (idx === -1) return null;
-
-  const [tiquet] = tickets.splice(idx, 1);
-  tiquet.estat = 'finalitzada';
-  tiquet.dataFinalitzacio = new Date().toISOString();
-  historial.unshift(tiquet);
-  historial = historial.slice(0, 200); // no acumulem historial infinit en memòria
-
-  const tecnic = tecnics.find(t => t.id === tiquet.tecnicId);
-  if (tecnic) {
-    const pendents = tiquetsActiusDe(tecnic.id);
-    if (pendents.length === 0) {
-      tecnic.estat = 'lliure';
-    }
-  }
-  return tiquet;
-}
-
-/* ================================================================
-   5. SERIALITZACIÓ PER A LES VISTES
-   ================================================================ */
-
-// Vista completa per al panell de la central: comarques -> tècnics -> cua
-function serialitzarComarques() {
-  return COMARQUES.map(c => {
-    const tecnicsComarca = tecnics
-      .filter(t => t.comarca === c.id)
-      .map(t => ({
-        id: t.id,
-        nom: t.nom,
-        telefon: t.telefon,
-        estat: t.estat,
-        tickets: tiquetsActiusDe(t.id)
-          .slice()
-          .sort((a, b) => new Date(a.dataCreacio) - new Date(b.dataCreacio))
-      }));
-
-    return {
-      id: c.id,
-      nom: c.nom,
-      magatzem: c.magatzem,
-      estatGlobal: tecnicsComarca.some(t => t.estat === 'lliure') ? 'lliure' : 'ocupat',
-      totalActius: tecnicsComarca.reduce((acc, t) => acc + t.tickets.length, 0),
-      tecnics: tecnicsComarca
-    };
+  res.status(201).json({
+    ...serializeService(newService),
+    technicianName: technician.name,
   });
-}
-
-/* ================================================================
-   6. RUTES API
-   ================================================================ */
-
-// --- Comarques (resum complet per al panell de Sort) ---
-app.get('/api/comarques', (req, res) => {
-  res.json(serialitzarComarques());
 });
 
-// --- Tècnics ---
-app.get('/api/tecnics', (req, res) => {
-  const { comarca } = req.query;
-  let resultat = tecnics;
-  if (comarca) resultat = resultat.filter(t => t.comarca === comarca);
-  res.json(resultat.map(t => ({ ...t, totalActius: tiquetsActiusDe(t.id).length })));
+// ---------------------------------------------------------------------------
+// 6. PATCH /api/services/:id — el tècnic interactua amb el seu tiquet
+//    Body admès (un o ambdós camps):
+//      { assignedDay: 'Avui' | 'Demà' | 'Altre dia' }
+//      { status: 'en_proces' | 'fet' }
+// ---------------------------------------------------------------------------
+
+app.patch('/api/services/:id', (req, res) => {
+  const { id } = req.params;
+  const { assignedDay, status } = req.body || {};
+
+  const service = services.find((s) => s.id === id);
+  if (!service) {
+    return res.status(404).json({ error: 'Servei no trobat.' });
+  }
+
+  // --- 6.a Selecció del dia (Estat 1: Pendent a la cua) --------------------
+  if (assignedDay !== undefined) {
+    if (!DAY_OPTIONS.includes(assignedDay)) {
+      return res.status(400).json({ error: `Dia no vàlid. Opcions: ${DAY_OPTIONS.join(', ')}` });
+    }
+    if (service.status !== STATUS.PENDENT) {
+      return res.status(409).json({ error: 'Només es pot triar el dia mentre el servei està pendent.' });
+    }
+    service.assignedDay = assignedDay;
+  }
+
+  // --- 6.b Canvi d'estat (Estat 2 i 3) --------------------------------------
+  if (status !== undefined) {
+    if (status === STATUS.EN_PROCES) {
+      if (service.status !== STATUS.PENDENT) {
+        return res.status(409).json({ error: 'Aquest servei no està pendent.' });
+      }
+
+      // Regla estricta FIFO: només es pot començar si és el servei pendent
+      // més antic (createdAt més petit) d'aquest tècnic, sigui quin sigui
+      // el dia que s'hagi triat per fer-lo.
+      const queue = pendingQueueForTechnician(service.technicianId);
+      const oldest = queue[0];
+      if (oldest && oldest.id !== service.id) {
+        return res.status(409).json({
+          error: 'Ordre de cua (FIFO): primer s\'ha de resoldre un servei més antic.',
+          blockingServiceId: oldest.id,
+          blockingClient: oldest.clientName,
+        });
+      }
+
+      // Un tècnic només pot tenir un servei "en procés" alhora.
+      const active = activeServiceForTechnician(service.technicianId);
+      if (active) {
+        return res.status(409).json({
+          error: 'Aquest tècnic ja té un servei en curs. Ha d\'acabar-lo abans de començar-ne un altre.',
+          activeServiceId: active.id,
+        });
+      }
+
+      service.status = STATUS.EN_PROCES;
+      service.startedAt = Date.now();
+    } else if (status === STATUS.FET) {
+      if (service.status !== STATUS.EN_PROCES) {
+        return res.status(409).json({ error: 'Només es pot finalitzar un servei que estigui en procés.' });
+      }
+      service.status = STATUS.FET;
+      service.finishedAt = Date.now();
+    } else {
+      return res.status(400).json({ error: `Estat no vàlid: ${status}` });
+    }
+  }
+
+  res.json(serializeService(service));
 });
 
-// --- Detall d'un tècnic + la seva cua activa (usat per tecnic.html) ---
-app.get('/api/tecnics/:id', (req, res) => {
-  const tecnic = tecnics.find(t => t.id === req.params.id);
-  if (!tecnic) return res.status(404).json({ error: 'Tècnic no trobat.' });
-  const cua = tiquetsActiusDe(tecnic.id).slice().sort((a, b) => {
-    // Primer les "assignada" (immediates), després "en_cua", després "programada"
-    const pes = { assignada: 0, en_cua: 1, programada: 2 };
-    return (pes[a.estat] - pes[b.estat]) || (new Date(a.dataCreacio) - new Date(b.dataCreacio));
-  });
-  res.json({ tecnic, tickets: cua });
-});
+// ---------------------------------------------------------------------------
+// 7. POST /api/chat — xatbot públic "professional" (chatbot-api.js)
+//    Només s'utilitza si al front-end tens activat <script src="/js/chatbot-api.js">
+//    en lloc de chatbot-simple.js. Requereix definir la variable d'entorn
+//    ANTHROPIC_API_KEY (Render → Settings → Environment).
+// ---------------------------------------------------------------------------
 
-// --- Tiquets: llistat amb filtres opcionals ---
-app.get('/api/tickets', (req, res) => {
-  const { comarca, tecnic, estat, actiu } = req.query;
-  let resultat = tickets;
-  if (comarca) resultat = resultat.filter(t => t.comarca === comarca);
-  if (tecnic) resultat = resultat.filter(t => t.tecnicId === tecnic);
-  if (estat) resultat = resultat.filter(t => t.estat === estat);
-  if (actiu === 'true') resultat = resultat.filter(t => t.estat !== 'finalitzada');
-  res.json(resultat.slice().sort((a, b) => new Date(b.dataCreacio) - new Date(a.dataCreacio)));
-});
+const ANTHROPIC_API_KEY = process.env.ANTHROPIC_API_KEY;
 
-// --- Historial (tiquets finalitzats) ---
-app.get('/api/historial', (req, res) => {
-  res.json(historial);
-});
+// Model ràpid i econòmic, ideal per a un xat de FAQ. Es pot canviar per
+// 'claude-sonnet-5' si es vol un raonament més elaborat (més cost i latència).
+const ANTHROPIC_MODEL = 'claude-haiku-4-5-20251001';
 
-// --- Crear un tiquet nou (formulari de la central) ---
-app.post('/api/tickets', (req, res) => {
+// Tota la informació real del negoci viu aquí. Actualitza-la quan canviïn
+// dades reals (telèfon, horari, preus, zones...).
+const PIRICAT_SYSTEM_PROMPT = `Ets l'assistent virtual de Piricat Energies, una empresa de lampisteria i electricitat que treballa a Andorra i a les comarques del Pallars Sobirà, Pallars Jussà, Alt Urgell, Alta Ribagorça i la Vall d'Aran.
+
+Informació del negoci:
+- Serveis: lampisteria (fuites, aixetes, escalfadors, desguassos, instal·lacions de bany/cuina) i electricitat (avaries, quadres elèctrics, endolls, punts de llum, petites instal·lacions).
+- Zones i tècnics assignats: Pallars Sobirà (2 tècnics), Pallars Jussà (1), Alt Urgell (1), Alta Ribagorça (1), Vall d'Aran (1), Andorra (1).
+- Horari d'atenció: dilluns a divendres, 8h–19h. [ACTUALITZA aquesta dada si no és correcta]
+- Contacte: telèfon +34 600 00 00 00, correu info@piricatenergies.cat. [ACTUALITZA aquestes dades pels reals]
+- Procés d'un servei: el client explica l'avaria, s'assigna automàticament al tècnic de la seva zona, el client tria el dia (avui / demà / un altre dia), i els serveis es resolen per ordre estricte d'arribada.
+
+Instruccions:
+- Respon sempre en català, de manera breu, clara i propera (com un professional de confiança, no com un venedor).
+- No inventis preus exactes, terminis concrets ni dades que no es t'han donat: si et pregunten un preu, digues que cal valorar-ho segons la feina i oferir el contacte telefònic per rebre un pressupost.
+- Si sembla una urgència (fuita greu, curtcircuit, espurnes, olor a cremat), recomana trucar directament en lloc de continuar escrivint.
+- Si la pregunta no té res a veure amb lampisteria, electricitat o el negoci, redirigeix amablement cap a aquests temes.`;
+
+app.post('/api/chat', async (req, res) => {
+  const { message, history } = req.body || {};
+
+  if (!message || !String(message).trim()) {
+    return res.status(400).json({ error: 'Falta el missatge.' });
+  }
+
+  if (!ANTHROPIC_API_KEY) {
+    return res.status(500).json({
+      error: 'El servidor no té configurada la variable ANTHROPIC_API_KEY.',
+    });
+  }
+
+  // Historial curt (últims 10 missatges) perquè el bot recordi el context
+  // de la conversa sense enviar-ho tot cada vegada.
+  const conversationHistory = Array.isArray(history) ? history.slice(-10) : [];
+
   try {
-    const { comarca, client, tipus, urgent, descripcio } = req.body || {};
+    const apiRes = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': ANTHROPIC_API_KEY,
+        'anthropic-version': '2023-06-01',
+      },
+      body: JSON.stringify({
+        model: ANTHROPIC_MODEL,
+        max_tokens: 400,
+        system: PIRICAT_SYSTEM_PROMPT,
+        messages: [...conversationHistory, { role: 'user', content: String(message) }],
+      }),
+    });
 
-    if (!comarca || !COMARCA_IDS.includes(comarca)) {
-      return res.status(400).json({ error: 'La comarca indicada no és vàlida.' });
-    }
-    if (!client || !client.nom || !client.telefon) {
-      return res.status(400).json({ error: 'Cal indicar com a mínim el nom i el telèfon del client.' });
+    if (!apiRes.ok) {
+      const errText = await apiRes.text();
+      console.error('Error de l\'API d\'Anthropic:', errText);
+      return res.status(502).json({ error: 'No s\'ha pogut contactar amb el servei d\'IA.' });
     }
 
-    const { tiquet, missatge, tecnic } = crearTiquet({ comarca, client, tipus, urgent, descripcio });
-    res.status(201).json({ tiquet, missatge, tecnic: { id: tecnic.id, nom: tecnic.nom, estat: tecnic.estat } });
+    const data = await apiRes.json();
+    const textBlock = (data.content || []).find((block) => block.type === 'text');
+    const reply = textBlock ? textBlock.text : 'Ho sento, no he pogut generar una resposta.';
+
+    res.json({ reply });
   } catch (err) {
-    res.status(400).json({ error: err.message });
+    console.error('Error cridant l\'API d\'Anthropic:', err);
+    res.status(500).json({ error: 'Error de connexió amb el servei d\'IA.' });
   }
 });
 
-// --- Actualitzar l'estat d'un tiquet (el tècnic tria "avui/dema/altre_dia") ---
-app.patch('/api/tickets/:id/programar', (req, res) => {
-  try {
-    const { dia, dataAltra } = req.body || {};
-    const tiquet = programarTiquet(req.params.id, dia, dataAltra);
-    if (!tiquet) return res.status(404).json({ error: 'Tiquet no trobat.' });
-    res.json(tiquet);
-  } catch (err) {
-    res.status(400).json({ error: err.message });
-  }
-});
+// ---------------------------------------------------------------------------
+// ARRENCADA
+// ---------------------------------------------------------------------------
 
-// --- Actualització genèrica d'estat (per si cal reobrir/tocar camps) ---
-app.patch('/api/tickets/:id', (req, res) => {
-  const tiquet = tickets.find(t => t.id === req.params.id);
-  if (!tiquet) return res.status(404).json({ error: 'Tiquet no trobat.' });
-  const { descripcio, urgent, tipus } = req.body || {};
-  if (descripcio !== undefined) tiquet.descripcio = descripcio;
-  if (urgent !== undefined) tiquet.urgent = !!urgent;
-  if (tipus !== undefined) tiquet.tipus = tipus;
-  res.json(tiquet);
-});
-
-// --- Finalitzar / esborrar un tiquet (el tècnic prem "Finalitzada") ---
-app.delete('/api/tickets/:id', (req, res) => {
-  const tiquet = finalitzarTiquet(req.params.id);
-  if (!tiquet) return res.status(404).json({ error: 'Tiquet no trobat.' });
-  res.json({ ok: true, tiquet });
-});
-
-// --- Salut del servei (útil per a Render) ---
-app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', tickets: tickets.length, tecnics: tecnics.length });
-});
-
-/* ================================================================
-   7. RUTES DE LES VISTES HTML (fallback net d'extensions)
-   ================================================================ */
-app.get('/privat', (req, res) => res.sendFile(path.join(__dirname, 'public', 'privat.html')));
-app.get('/tecnic', (req, res) => res.sendFile(path.join(__dirname, 'public', 'tecnic.html')));
-
-// Qualsevol altra ruta no-API torna a la landing pública
-app.get('*', (req, res, next) => {
-  if (req.path.startsWith('/api/')) return next();
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
-});
-
-/* ================================================================
-   8. ARRENCADA
-   ================================================================ */
-llavor();
 app.listen(PORT, () => {
-  console.log(`⚡ Piricat Energies escoltant al port ${PORT}`);
+  console.log(`⚡🔧 Piricat Energies — servidor escoltant a http://localhost:${PORT}`);
+  console.log(`   Panell gestora: http://localhost:${PORT}/privat.html`);
+  console.log(`   App tècnic:     http://localhost:${PORT}/tecnic.html`);
 });
