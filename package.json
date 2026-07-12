@@ -1,18 +1,17 @@
 {
   "name": "piricat-energies",
   "version": "1.0.0",
-  "description": "Piricat Energies - Sistema Smart-Queue de gestio d'avisos de lampisteria i electricitat per a l'alta muntanya (Pallars Sobira, Pallars Jussa, Alta Ribagorca, Val d'Aran, Alt Urgell i Andorra).",
+  "description": "Sistema de gestió de cues i incidències en temps real per a Piricat Energies (lampisteria i electricitat).",
   "main": "server.js",
-  "scripts": {
-    "start": "node server.js"
-  },
   "engines": {
     "node": ">=18.0.0"
   },
-  "dependencies": {
-    "express": "^4.19.2"
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js"
   },
-  "author": "Piricat Energies",
-  "license": "UNLICENSED",
-  "private": true
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.19.2"
+  }
 }
