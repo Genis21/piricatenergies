@@ -382,6 +382,100 @@ app.post('/api/chat', async (req, res) => {
 });
 
 // ---------------------------------------------------------------------------
+// 8. BOT DE TELEGRAM (mode webhook) — 100% gratuït
+//    A diferència d'un bot amb "polling" (que necessita un procés separat
+//    sempre encès i, a Render, un Background Worker de pagament), aquí és
+//    Telegram qui truca directament a aquest mateix servidor cada vegada
+//    que algú escriu al bot. Com que ja tens aquest servidor desplegat com
+//    a Web Service (pla gratuït), no cal cap servei ni cost addicional.
+//
+//    Configuració necessària (Render → el teu servei → Environment):
+//      TELEGRAM_TOKEN   → el token que et va donar @BotFather
+//      GROQ_KEY         → la teva clau de console.groq.com
+//
+//    Un cop desplegat, cal registrar el webhook UN SOL COP visitant (des
+//    del navegador n'hi ha prou) aquesta URL, substituint els dos valors:
+//      https://api.telegram.org/bot<EL_TEU_TELEGRAM_TOKEN>/setWebhook?url=https://<LA_TEVA_URL_DE_RENDER>/telegram-webhook
+// ---------------------------------------------------------------------------
+
+const TELEGRAM_TOKEN = process.env.TELEGRAM_TOKEN;
+const GROQ_KEY = process.env.GROQ_KEY;
+
+const TELEGRAM_API = `https://api.telegram.org/bot${TELEGRAM_TOKEN}`;
+const GROQ_API = 'https://api.groq.com/openai/v1/chat/completions';
+
+async function telegramSendMessage(chatId, text) {
+  await fetch(`${TELEGRAM_API}/sendMessage`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ chat_id: chatId, text }),
+  });
+}
+
+async function askGroq(question) {
+  if (!GROQ_KEY) {
+    return 'El bot no està configurat correctament (falta la variable GROQ_KEY al servidor).';
+  }
+
+  try {
+    const r = await fetch(GROQ_API, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${GROQ_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'llama-3.3-70b-versatile',
+        messages: [
+          { role: 'system', content: PIRICAT_SYSTEM_PROMPT },
+          { role: 'user', content: question },
+        ],
+        max_tokens: 300,
+        temperature: 0.3,
+      }),
+    });
+
+    const data = await r.json();
+    const reply = data.choices?.[0]?.message?.content?.trim();
+    return reply || 'Ho sento, no he pogut generar una resposta.';
+  } catch (err) {
+    console.error('Error cridant Groq:', err);
+    return 'Ho sento, ara mateix no puc respondre. Contacta\'ns directament per telèfon.';
+  }
+}
+
+app.post('/telegram-webhook', async (req, res) => {
+  // Responem 200 immediatament: Telegram només vol saber que hem rebut
+  // l'actualització, no cal fer-lo esperar mentre consultem la IA.
+  res.sendStatus(200);
+
+  try {
+    const update = req.body;
+    const msg = update && update.message;
+    if (!msg || !msg.text || !msg.chat) return;
+
+    const chatId = msg.chat.id;
+    const text = msg.text.trim();
+
+    if (text === '/start') {
+      await telegramSendMessage(
+        chatId,
+        "Hola! Benvingut/da a Piricat Energies 👋\n" +
+        "Sóc el teu assistent virtual. Pregunta'm el que vulguis sobre:\n\n" +
+        "🔧 Lampisteria · ⚡ Electricitat · 📍 Zones\n" +
+        "🛠️ Com demanar un servei · 🕙 Horari · 📞 Contacte"
+      );
+      return;
+    }
+
+    const reply = await askGroq(text);
+    await telegramSendMessage(chatId, reply);
+  } catch (err) {
+    console.error('Error al webhook de Telegram:', err);
+  }
+});
+
+// ---------------------------------------------------------------------------
 // ARRENCADA
 // ---------------------------------------------------------------------------
 
