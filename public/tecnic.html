@@ -1,1 +1,49 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Piricat Energies — App Tècnic</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/operari.css" />
+</head>
+<body>
 
+  <header class="app-top">
+    <div class="row-1">
+      <div>
+        <h1>Piricat Energies</h1>
+        <div class="subtitle">APP TÈCNIC · <a href="/privat.html" class="link-back">Panell Gestora →</a></div>
+      </div>
+      <select id="technician-select">
+        <option value="" disabled selected>Selecciona el teu nom...</option>
+      </select>
+    </div>
+    <div class="my-status free" id="my-status">
+      <span class="dot"></span>
+      <span id="my-status-text">Selecciona el teu nom per començar</span>
+    </div>
+  </header>
+
+  <main>
+
+    <section class="block" id="active-block" style="display:none;">
+      <h2>Servei en curs</h2>
+      <div id="active-ticket-container"></div>
+    </section>
+
+    <section class="block">
+      <h2>La teva cua (ordre d'arribada)</h2>
+      <div id="queue-container">
+        <div class="empty-state">Selecciona el teu nom a dalt per veure la teva cua.</div>
+      </div>
+    </section>
+
+  </main>
+
+  <div class="toast" id="toast"></div>
+
+  <script src="/js/operari.js"></script>
+</body>
+</html>
