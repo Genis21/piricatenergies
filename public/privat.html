@@ -1,1 +1,86 @@
+<!DOCTYPE html>
+<html lang="ca">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Piricat Energies — Panell de Gestora</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="/css/central.css" />
+</head>
+<body>
 
+  <header class="topbar">
+    <div class="brand">
+      <div class="brand-mark">P</div>
+      <div>
+        <h1>Piricat Energies</h1>
+        <span class="subtitle">CENTRALETA · GESTIÓ DE SERVEIS</span>
+      </div>
+    </div>
+    <div class="topbar-actions">
+      <a href="/tecnic.html" class="btn-goto-tecnic">App Tècnic →</a>
+      <div class="live-pill">
+        <span class="live-dot"></span>
+        <span id="clock">--:--:--</span>
+      </div>
+    </div>
+  </header>
+
+  <div class="layout">
+
+    <!-- ================= FORMULARI NOU SERVEI ================= -->
+    <section class="panel">
+      <h2>Nou servei</h2>
+      <form id="service-form" novalidate>
+        <div class="field">
+          <label for="clientName">Nom del client</label>
+          <input type="text" id="clientName" name="clientName" placeholder="Ex: Maria Puig" required />
+        </div>
+
+        <div class="field">
+          <label for="address">Adreça de l'avaria / servei</label>
+          <input type="text" id="address" name="address" placeholder="Ex: Carrer Nou 12, Igualada" required />
+        </div>
+
+        <div class="field">
+          <label for="description">Descripció del servei</label>
+          <textarea id="description" name="description" placeholder="Ex: Fuita d'aigua sota el rentavaixelles" required></textarea>
+        </div>
+
+        <div class="field">
+          <label for="zone">Comarca / Zona</label>
+          <select id="zone" name="zone" required>
+            <option value="" disabled selected>Selecciona una comarca...</option>
+          </select>
+          <div class="zone-hint" id="zone-hint"></div>
+        </div>
+
+        <button type="submit" class="submit">Enviar a la cua del tècnic</button>
+        <div class="form-feedback" id="form-feedback"></div>
+      </form>
+    </section>
+
+    <!-- ================= QUADRE DE TÈCNICS + CUES ================= -->
+    <div style="display:flex; flex-direction:column; gap:24px;">
+
+      <section class="panel">
+        <h2>Estat dels tècnics</h2>
+        <div class="tech-grid" id="tech-grid">
+          <!-- Generat dinàmicament per central.js -->
+        </div>
+      </section>
+
+      <section class="panel">
+        <h2>Cues de serveis pendents (ordre estricte d'arribada)</h2>
+        <div id="queues-container">
+          <!-- Generat dinàmicament per central.js -->
+        </div>
+      </section>
+
+    </div>
+  </div>
+
+  <script src="/js/central.js"></script>
+</body>
+</html>
