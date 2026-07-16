@@ -67,8 +67,7 @@
       etiqueta: "Salutació",
       keywords: ["hola", "bon dia", "bona tarda", "bona nit", "hey", "ei", "hei"],
       response:
-        "Hola! Sóc l'assistent virtual de Piricat Energies. En què et puc ajudar? 😊<br>" +
-        "Pots preguntar-me sobre serveis, comarques on treballem, urgències, horari o com funciona la petició d'un tècnic."
+        "Hola! Sóc l'assistent virtual de Piricat Energies. En què et puc ajudar? 😊"
     },
 
     // Tema d'URGÈNCIES: agrupa tant les paraules explícites d'urgència
@@ -173,6 +172,23 @@
     },
 
     {
+      id: "ajuda",
+      etiqueta: "Ajuda",
+      keywords: ["ajuda", "què saps", "què pots fer", "què et puc preguntar", "quina informació tens", "què em pots dir", "com em pots ajudar"],
+      response:
+        "Et puc ajudar amb informació sobre:<br><br>" +
+        "🔧 Serveis<br>" +
+        "📍 Cobertura<br>" +
+        "⚙️ Com funciona el servei<br>" +
+        "🕒 Horaris<br>" +
+        "📞 Contacte<br>" +
+        "💰 Pressupostos<br>" +
+        "🚨 Urgències<br>" +
+        "🏨 Hotels i allotjaments<br><br>" +
+        "Si tens qualsevol dubte, només cal que m'ho preguntis."
+    },
+
+    {
       id: "cua",
       etiqueta: "Com funciona",
       keywords: [
@@ -213,13 +229,13 @@
       etiqueta: "Horari",
       keywords: ["horari", "hora", "obert", "obrim", "tancat", "quan obriu"],
       response:
-        "La centraleta de Sort atén trucades els 7 dies de la setmana per coordinar els tècnics de cada comarca. Truca'ns i t'atendrem."
+        "Obrim de dilluns a divendres, de 9:00 a 18:00. Els caps de setmana només atenem avaries urgents al Pallars Sobirà. La nostra centraleta telefònica està disponible els 7 dies de la setmana, de 9:00 a 13:00 i de 14:00 a 18:00. Truqui'ns i estarem encantats d'atendre'l."
     },
 
     {
       id: "contacte",
       etiqueta: "Contacte",
-      keywords: ["contacte", "contactar", "telefon", "trucar", "email", "correu"],
+      keywords: ["contacte", "contactar", "telefon", "trucar", "email", "correu", "mobil", "móbil", "movil", "móvil"],
       response: "Pots contactar-nos per telèfon: 📞 " + TELEFON + ". És un únic número per a tot el Pirineu."
     },
 
