@@ -8,7 +8,10 @@
  *  COM AFEGIR CONTINGUT NOU (p. ex. Plaques Solars, Aerotèrmia...)
  *  Només cal afegir un objecte nou dins de BASE_CONEIXEMENT, amb:
  *    - id:       identificador únic (per a depuració/estadístiques)
- *    - keywords: totes les paraules o frases que hi han de portar
+ *    - keywords: totes les paraules o frases que hi han de portar. No cal
+ *                afegir cada plural/femení a mà: el motor de classificació
+ *                ja tolera automàticament singular/plural i masculí/femení
+ *                habituals (vegeu "MOTOR DE CLASSIFICACIÓ" més avall).
  *    - response: el text de resposta (pot incloure HTML senzill, <br>...)
  *    - priority: (opcional, per defecte 0) com més alt, més guanya sobre
  *                la resta de temes detectats en el mateix missatge.
@@ -16,6 +19,9 @@
  *    - cta:      (opcional) true si, quan aquest tema surti sol o combinat,
  *                cal afegir al final la crida a l'acció comercial estàndard
  *                (només si la resposta encara no esmenta el telèfon).
+ *    - etiqueta: (opcional) nom curt que apareix com a capçalera d'aquest
+ *                bloc quan la resposta es combina amb altres temes (p. ex.
+ *                "Horari", "Cobertura"). Si no s'indica, es mostra "Info".
  *  No cal tocar cap altra part del codi. Vegeu la PLANTILLA D'EXEMPLE
  *  comentada al final de BASE_CONEIXEMENT.
  * ─────────────────────────────────────────────────────────────────
@@ -31,13 +37,24 @@
   // (vegeu el camp `cta` de cada tema i la funció afegirCridaAccio).
   const CRIDA_ACCIO = "Si vols que t'assignem un tècnic, truca'ns al 📞 " + TELEFON + ".";
 
-  // Paràmetres ajustables del motor de classificació
+  // Paràmetres ajustables del motor de classificació.
+  // IMPORTANT: el nombre de temes detectats JA NO és el criteri principal
+  // per decidir si es deriva a Telegram. Un missatge amb diversos temes
+  // clars ("Teniu servei a Vielha? Quin horari feu? Necessito un tècnic
+  // per una caldera") es respon sencer, encara que toqui 3, 4 o 5 temes.
   const CONFIG = {
-    // Si es detecten més temes que aquest número en un sol missatge,
-    // es considera que la consulta és massa dispersa/ambigua i es
-    // deriva directament a l'assistent de Telegram en lloc d'intentar
-    // encaixar-ho tot en una resposta.
-    MAX_TEMES_COMBINABLES: 3
+    // A partir d'aquest nombre de blocs combinats, la resposta ja és una
+    // mica llarga: s'afegeix un suggeriment (NO obligatori) de parlar amb
+    // l'assistent de Telegram per a una resposta més detallada, però es
+    // continua responent la consulta sencera igualment.
+    TEMES_AVIS_TELEGRAM: 5,
+    // Xarxa de seguretat, NOMÉS per a casos extrems: si un missatge toca
+    // més temes que això alhora (símptoma típic de text enganxat, spam o
+    // consulta caòtica sense relació real entre les parts), aleshores sí
+    // que es considera massa ambigu per respondre amb garanties i es
+    // deriva del tot a Telegram. En l'ús normal no s'hauria d'arribar mai
+    // aquí.
+    TEMES_MAXIM_ABSOLUT: 8
   };
 
   // ─────────────────────────────────────────────
@@ -47,6 +64,7 @@
   const BASE_CONEIXEMENT = [
     {
       id: "salutacio",
+      etiqueta: "Salutació",
       keywords: ["hola", "bon dia", "bona tarda", "bona nit", "hey", "ei", "hei"],
       response:
         "Hola! Sóc l'assistent virtual de Piricat Energies. En què et puc ajudar? 😊<br>" +
@@ -58,7 +76,8 @@
     // incidents greus (fum, canonades rebentades, aigua calenta, etc.).
     // priority: 2 → és el nivell més alt, guanya sempre sobre qualsevol
     // altre tema detectat en el mateix missatge (fins i tot per davant
-    // dels serveis fora d'abast).
+    // dels serveis fora d'abast). No té `etiqueta` perquè mai es combina
+    // amb altres temes: sempre respon tota sola.
     {
       id: "urgencies",
       priority: 2,
@@ -87,7 +106,8 @@
     // Tema de SERVEIS FORA D'ABAST: electrodomèstics que Piricat NO repara.
     // priority: 1 → guanya sobre qualsevol tema normal (prioritat 0), però
     // queda per sota d'una urgència real (prioritat 2) si coincidissin totes
-    // dues coses en el mateix missatge.
+    // dues coses en el mateix missatge. Tampoc porta `etiqueta`: sempre
+    // respon sola.
     {
       id: "fora_abast",
       priority: 1,
@@ -103,6 +123,7 @@
 
     {
       id: "serveis",
+      etiqueta: "Serveis",
       cta: true,
       keywords: [
         // Genèric
@@ -114,8 +135,10 @@
         "diferencial", "magnetotermic", "icp", "fusible", "ploms", "endoll", "interruptor",
         // Calderes
         "cremador", "gas", "gasoil",
+        // Instal·lacions noves (amb variants habituals, amb i sense "l·l")
+        "instalacio", "installacio",
         // Variants amb faltes d'ortografia habituals
-        "lamplisteria", "lampsteria", "eletricitat", "electrisista", "calderaa"
+        "lamplisteria", "lampsteria", "eletricitat", "electrisista", "electricitad", "calderaa"
       ],
       response:
         "Fem lampisteria i electricitat: fuites, avaries de caldera, calefacció, aigua calenta, quadres elèctrics, talls de subministrament, " +
@@ -125,6 +148,7 @@
     // Tema de MANTENIMENT PREVENTIU, diferenciat del servei reactiu (avaries).
     {
       id: "manteniment",
+      etiqueta: "Manteniment",
       cta: true,
       keywords: ["revisio", "manteniment", "inspeccio"],
       response:
@@ -138,6 +162,7 @@
     // dona una resposta molt més precisa i evita duplicar informació.
     {
       id: "comarques",
+      etiqueta: "Cobertura",
       keywords: [
         "comarca", "comarques", "cobertura", "zona",
         "aran", "ribagorca", "jussa", "sobira", "urgell", "andorra"
@@ -149,8 +174,10 @@
 
     {
       id: "cua",
+      etiqueta: "Com funciona",
       keywords: [
-        "cua", "com funciona", "quan vindra", "temps d'espera", "espera", "tecnic", "quant triga"
+        "cua", "com funciona", "quan vindra", "temps d'espera", "espera", "tecnic", "quant triga",
+        "quan arribareu", "quant trigareu", "quant tardareu"
       ],
       response:
         "Sistema Smart-Queue: truques a la central, mirem si el tècnic de la teva comarca està lliure. Si ho està, ve en menys d'una hora. " +
@@ -162,10 +189,11 @@
     // per això `cta` no cal (afegirCridaAccio no duplica el telèfon).
     {
       id: "assistencia",
+      etiqueta: "Assistència",
       keywords: [
         "em podeu ajudar", "necessito ajuda", "necessito un tecnic", "vull demanar un tecnic",
         "vull una visita", "necessito servei", "necessito un professional", "voldria un tecnic",
-        "podeu enviar un tecnic"
+        "podeu enviar un tecnic", "puc demanar un tecnic", "com demano un tecnic"
       ],
       response:
         "Sí, podem ajudar-te! 🙌 Piricat Energies gestiona la petició de tècnics de lampisteria i electricitat a tot el Pirineu. " +
@@ -174,6 +202,7 @@
 
     {
       id: "preu",
+      etiqueta: "Pressupost",
       keywords: ["preu", "preus", "cost", "pressupost", "quant costa", "quant val", "tarifa"],
       response:
         "El preu depèn del tipus de feina i la comarca. Truca'ns al " + TELEFON + " i et donem un pressupost sense compromís."
@@ -181,6 +210,7 @@
 
     {
       id: "horari",
+      etiqueta: "Horari",
       keywords: ["horari", "hora", "obert", "obrim", "tancat", "quan obriu"],
       response:
         "La centraleta de Sort atén trucades els 7 dies de la setmana per coordinar els tècnics de cada comarca. Truca'ns i t'atendrem."
@@ -188,13 +218,15 @@
 
     {
       id: "contacte",
+      etiqueta: "Contacte",
       keywords: ["contacte", "contactar", "telefon", "trucar", "email", "correu"],
       response: "Pots contactar-nos per telèfon: 📞 " + TELEFON + ". És un únic número per a tot el Pirineu."
     },
 
     {
       id: "central",
-      keywords: ["central", "seu", "on sou", "adreça", "adreca", "ubicacio"],
+      etiqueta: "Ubicació",
+      keywords: ["central", "seu", "on sou", "adreça", "adreca", "ubicacio", "on esteu ubicats"],
       response: "La nostra central és a Sort, Pallars Sobirà, però tenim tècnics i magatzem a les 6 comarques que cobrim."
     },
 
@@ -202,6 +234,7 @@
     // recorda que també atenem hotels, cases rurals, etc. (punt 7).
     {
       id: "turisme",
+      etiqueta: "Hotels i allotjaments",
       cta: true,
       keywords: [
         "hotel", "apartament turistic", "casa rural", "allotjament", "bungalow", "camping", "refugi"
@@ -213,13 +246,15 @@
 
     {
       id: "comiat",
-      keywords: ["gracies", "adeu", "fins aviat", "bye"],
+      etiqueta: "Comiat",
+      keywords: ["gracies", "adeu", "adeu siau", "fins aviat", "bye"],
       response: "Gràcies a tu! Si necessites un tècnic, truca'ns al " + TELEFON + ". Fins aviat! 👋"
     }
 
     /* ───────── PLANTILLA D'EXEMPLE — descomenta i omple per afegir un tema nou ─────────
     ,{
       id: "plaques_solars",
+      etiqueta: "Plaques solars",
       keywords: ["placa solar", "plaques solars", "fotovoltaica", "panells solars", "autoconsum"],
       response: "Text real del servei de plaques solars (omplir amb informació certa de l'empresa)."
     }
@@ -279,7 +314,8 @@
 
   // Resposta quan NO es detecta cap tema (missatge no reconegut). To de veu
   // comercial: convida a preguntar per categories concretes i, si la
-  // consulta és massa complexa, deriva a l'assistent de Telegram.
+  // consulta és massa complexa, deriva a l'assistent de Telegram amb un
+  // enllaç totalment clicable (obre l'app o el web de Telegram directament).
   const RESPOSTA_ZERO_COINCIDENCIES =
     "No acabo d'entendre exactament què necessites. 🤔<br><br>" +
     "Pots preguntar-me sobre:<br>" +
@@ -294,20 +330,40 @@
     "artificial i pot mantenir una conversa molt més completa.<br>" +
     "👉 <a href=\"" + TELEGRAM_URL + "\" target=\"_blank\" rel=\"noopener\">" + TELEGRAM_URL + "</a>";
 
-  // Resposta quan es detecten MASSA temes diferents alhora (consulta ambigua)
+  // Resposta quan es detecten MASSA temes diferents alhora (xarxa de
+  // seguretat, vegeu CONFIG.TEMES_MAXIM_ABSOLUT). Enllaç clicable igual que
+  // a RESPOSTA_ZERO_COINCIDENCIES.
   const RESPOSTA_AMBIGUA =
     "Aquesta consulta és una mica més complexa del que puc interpretar amb seguretat. 🤔<br><br>" +
     "Et recomano parlar amb el nostre assistent avançat de Telegram: utilitza intel·ligència artificial, entén preguntes complexes i pot " +
     "mantenir una conversa molt més completa.<br>" +
     "👉 <a href=\"" + TELEGRAM_URL + "\" target=\"_blank\" rel=\"noopener\">" + TELEGRAM_URL + "</a>";
 
+  // Suggeriment SUAU (no obligatori) que s'afegeix al final d'una resposta
+  // combinada quan té molts blocs (vegeu CONFIG.TEMES_AVIS_TELEGRAM i
+  // afegirSuggerimentTelegramSiCal). A diferència de RESPOSTA_AMBIGUA, aquí
+  // la consulta SÍ que s'ha respost sencera; només es recomana Telegram per
+  // si l'usuari vol aprofundir més. Enllaç clicable igual que la resta.
+  const SUGGERIMENT_TELEGRAM_SUAU =
+    "Si vols una resposta més detallada o tens una consulta més específica, també pots parlar amb el nostre assistent avançat de Telegram: " +
+    "👉 <a href=\"" + TELEGRAM_URL + "\" target=\"_blank\" rel=\"noopener\">" + TELEGRAM_URL + "</a>";
+
   // ─────────────────────────────────────────────
   //  MOTOR DE CLASSIFICACIÓ
+  //  Sistema tolerant per paraula (no és IA): normalitza, separa el
+  //  missatge en paraules ("tokens") i redueix cadascuna a una arrel
+  //  aproximada perquè singular/plural i masculí/femení habituals
+  //  coincideixin (p. ex. "horari"/"horaris", "caldera"/"calderes",
+  //  "pressupost"/"pressupostos", "reparació"/"reparacions"). Les faltes
+  //  d'ortografia dels exemples (lamplisteria, eletricitat...) es
+  //  continuen cobrint com a paraules clau explícites, ja que no segueixen
+  //  cap patró previsible.
   // ─────────────────────────────────────────────
 
   /**
-   * Normalitza un text per fer-lo comparable: minúscules, sense accents
-   * i amb els apòstrofs tipogràfics uniformitzats.
+   * Normalitza un text per fer-lo comparable: minúscules, sense accents,
+   * sense el punt volat (l·l → ll) i amb els apòstrofs tipogràfics
+   * uniformitzats.
    */
   function normalitzar(text) {
     return text
@@ -315,39 +371,106 @@
       .normalize("NFD")
       .replace(/[\u0300-\u036f]/g, "")
       .replace(/[’‘]/g, "'")
+      .replace(/·/g, "")
       .trim();
   }
 
   /**
-   * Converteix una paraula clau en una expressió regular amb límits de
-   * paraula (\b), escapant qualsevol caràcter especial de regex.
+   * Divideix un text normalitzat en paraules ("tokens"): seqüències de
+   * lletres/xifres (i apòstrofs, per mantenir contraccions com "s'ha").
+   * Qualsevol altre caràcter (espais, guions, signes de puntuació...)
+   * actua com a separador.
    */
-  function construirRegex(clauOriginal) {
-    const clauNorm = normalitzar(clauOriginal);
-    const escapada = clauNorm.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-    return new RegExp("\\b" + escapada + "\\b");
+  function tokenitzar(text) {
+    const norm = normalitzar(text);
+    return norm.match(/[a-z0-9']+/g) || [];
   }
 
   /**
-   * Precompila totes les expressions regulars de la base de coneixement
-   * UNA SOLA VEGADA en carregar el script, en lloc de reconstruir-les
+   * Redueix una paraula a una arrel aproximada aplicant només els patrons
+   * de plural/femení més habituals en català. No és un stemmer lingüístic
+   * complet: només busca fer que exemples com horari/horaris,
+   * caldera/calderes, pressupost/pressupostos o reparació/reparacions
+   * coincideixin, sense cap dependència ni lògica complexa.
+   */
+  function reduirParaula(paraula) {
+    if (paraula.length <= 3) return paraula; // paraules curtes: no tocar (evita falsos positius)
+
+    if (paraula.endsWith("cions")) {
+      const candidata = paraula.slice(0, -5) + "cio"; // reparacions → reparacio
+      if (candidata.length >= 3) return candidata;
+    }
+    if (paraula.endsWith("es")) {
+      const candidata = paraula.slice(0, -2) + "a"; // calderes → caldera
+      if (candidata.length >= 3) return candidata;
+    }
+    if (paraula.endsWith("os")) {
+      const candidata = paraula.slice(0, -2); // pressupostos → pressupost
+      if (candidata.length >= 3) return candidata;
+    }
+    if (paraula.endsWith("s")) {
+      const candidata = paraula.slice(0, -1); // horaris → horari, tècnics → tècnic
+      if (candidata.length >= 3) return candidata;
+    }
+    return paraula;
+  }
+
+  /**
+   * Aplica reduirParaula a cada token d'una llista.
+   */
+  function reduirTokens(tokens) {
+    return tokens.map(reduirParaula);
+  }
+
+  /**
+   * Prepara qualsevol text (paraula clau, població, o missatge de
+   * l'usuari) com un array d'arrels llest per comparar amb conteSequencia.
+   */
+  function prepararArrels(text) {
+    return reduirTokens(tokenitzar(text));
+  }
+
+  /**
+   * Comprova si `arrelsCercades` apareix com a seqüència contigua dins
+   * d'`arrelsMissatge` (mateix ordre, un rere l'altre). Fa la mateixa
+   * feina que abans feia una regex amb límits de paraula (\b...\b), però
+   * comparant arrels ja reduïdes en lloc de text literal.
+   */
+  function conteSequencia(arrelsMissatge, arrelsCercades) {
+    if (arrelsCercades.length === 0) return false;
+    for (let i = 0; i <= arrelsMissatge.length - arrelsCercades.length; i++) {
+      let coincideix = true;
+      for (let j = 0; j < arrelsCercades.length; j++) {
+        if (arrelsMissatge[i + j] !== arrelsCercades[j]) {
+          coincideix = false;
+          break;
+        }
+      }
+      if (coincideix) return true;
+    }
+    return false;
+  }
+
+  /**
+   * Precompila totes les paraules clau de la base de coneixement en
+   * arrels UNA SOLA VEGADA en carregar el script, en lloc de recalcular-les
    * a cada missatge de l'usuari (millor rendiment).
    */
   function precompilarBaseConeixement(base) {
     return base.map(function (tema) {
       return Object.assign({}, tema, {
-        regexos: tema.keywords.map(construirRegex)
+        arrelsPerKeyword: tema.keywords.map(prepararArrels)
       });
     });
   }
 
   /**
    * Precompila una llista de { clau, mostrar } (poblacions, tipus
-   * d'immoble...) afegint-hi la regex corresponent a `clau`.
+   * d'immoble...) afegint-hi les arrels corresponents a `clau`.
    */
   function precompilarLlistaAmbClau(llista) {
     return llista.map(function (element) {
-      return Object.assign({}, element, { regex: construirRegex(element.clau) });
+      return Object.assign({}, element, { arrels: prepararArrels(element.clau) });
     });
   }
 
@@ -358,15 +481,15 @@
 
   /**
    * Retorna tots els temes de la base de coneixement que coincideixen amb
-   * el missatge (ja normalitzat), sense duplicar-ne el text de resposta.
+   * les arrels del missatge, sense duplicar-ne el text de resposta.
    */
-  function detectarTemes(missatgeNorm) {
+  function detectarTemes(missatgeArrels) {
     const trobats = [];
     const respostesVistes = new Set();
 
     for (const tema of BASE_COMPILADA) {
-      const coincideix = tema.regexos.some(function (re) {
-        return re.test(missatgeNorm);
+      const coincideix = tema.arrelsPerKeyword.some(function (arrelsKeyword) {
+        return conteSequencia(missatgeArrels, arrelsKeyword);
       });
       if (coincideix && !respostesVistes.has(tema.response)) {
         trobats.push(tema);
@@ -380,14 +503,14 @@
    * Comprova si el missatge esmenta una població coneguda, dins o fora de
    * la zona de cobertura. Retorna { trobada: false } si no en detecta cap.
    */
-  function detectarPoblacio(missatgeNorm) {
+  function detectarPoblacio(missatgeArrels) {
     for (const p of POBLACIONS_COBERTES_COMPILADES) {
-      if (p.regex.test(missatgeNorm)) {
+      if (conteSequencia(missatgeArrels, p.arrels)) {
         return { trobada: true, coberta: true, mostrar: p.mostrar };
       }
     }
     for (const p of POBLACIONS_FORA_COBERTURA_COMPILADES) {
-      if (p.regex.test(missatgeNorm)) {
+      if (conteSequencia(missatgeArrels, p.arrels)) {
         return { trobada: true, coberta: false, mostrar: p.mostrar };
       }
     }
@@ -398,9 +521,9 @@
    * Detecta si el missatge esmenta un tipus d'immoble/allotjament conegut
    * (hotel, casa rural...). Retorna el nom a mostrar o null.
    */
-  function detectarTipusImmoble(missatgeNorm) {
+  function detectarTipusImmoble(missatgeArrels) {
     for (const p of PARAULES_TIPUS_IMMOBLE_COMPILADES) {
-      if (p.regex.test(missatgeNorm)) {
+      if (conteSequencia(missatgeArrels, p.arrels)) {
         return p.mostrar;
       }
     }
@@ -419,12 +542,14 @@
     if (resultatPoblacio.coberta) {
       return {
         id: "poblacio_coberta",
+        etiqueta: "Cobertura",
         cta: true,
         response: "Sí, treballem a " + resultatPoblacio.mostrar + "! 👍 És dins la nostra zona de cobertura habitual."
       };
     }
     return {
       id: "poblacio_fora_cobertura",
+      etiqueta: "Cobertura",
       cta: false,
       response:
         "Actualment no donem servei directe a " + resultatPoblacio.mostrar + ", ja que ens centrem al Pirineu " +
@@ -496,13 +621,19 @@
 
   /**
    * Construeix una resposta única i llegible a partir de diversos temes
-   * detectats en el mateix missatge (entre 2 i MAX_TEMES_COMBINABLES).
+   * detectats en el mateix missatge, amb una capçalera per bloc perquè es
+   * llegeixi bé encara que hi hagi molts temes junts:
+   *   🔹 Cobertura
+   *   ...
+   *   🔹 Horari
+   *   ...
    */
   function construirRespostaCombinada(temes) {
     const intro = "Vas amb diverses preguntes alhora, aquí ho tens per parts! 😊<br><br>";
     const blocs = temes
       .map(function (tema) {
-        return "🔹 " + tema.response;
+        const etiqueta = tema.etiqueta || "Info";
+        return "🔹 <strong>" + etiqueta + "</strong><br>" + tema.response;
       })
       .join("<br><br>");
     return intro + blocs;
@@ -522,14 +653,28 @@
   }
 
   /**
-   * Decideix quina resposta final donar en funció de quants temes s'han
-   * detectat i de la seva prioritat. Aquesta és la única funció que cal
-   * entendre per saber "què respon el bot i per què":
-   *   1. Cap tema           → resposta de "no identificat" (convida a Telegram)
-   *   2. Tema prioritari     → guanya sempre, ignora la resta (urgències, fora d'abast)
-   *   3. Un sol tema normal  → resposta directa (+ CTA si escau)
-   *   4. 2–3 temes normals   → resposta combinada (+ CTA + memòria si escau)
-   *   5. Més de 3 temes      → consulta ambigua, deriva a Telegram
+   * Si la resposta combinada té molts blocs (CONFIG.TEMES_AVIS_TELEGRAM),
+   * afegeix un suggeriment SUAU de Telegram al final. No deriva ni
+   * substitueix la resposta: només la complementa.
+   */
+  function afegirSuggerimentTelegramSiCal(text, temes) {
+    if (temes.length > CONFIG.TEMES_AVIS_TELEGRAM) {
+      return text + "<br><br>" + SUGGERIMENT_TELEGRAM_SUAU;
+    }
+    return text;
+  }
+
+  /**
+   * Decideix quina resposta final donar en funció dels temes detectats i
+   * de la seva prioritat. El NOMBRE de temes ja NO és el criteri
+   * principal: un missatge amb diversos temes clars es respon sencer.
+   * Ordre de decisions:
+   *   1. Cap tema             → resposta de "no identificat" (convida a Telegram)
+   *   2. Tema prioritari       → guanya sempre, ignora la resta (urgències, fora d'abast)
+   *   3. Massa temes alhora    → xarxa de seguretat (TEMES_MAXIM_ABSOLUT): missatge caòtic, deriva a Telegram
+   *   4. Un o més temes normals → resposta directa o combinada (+ CTA + memòria)
+   *      · Amb molts blocs (TEMES_AVIS_TELEGRAM) s'afegeix un suggeriment
+   *        NO obligatori de Telegram per a més detall.
    */
   function construirRespostaFinal(temes, memoria) {
     if (temes.length === 0) {
@@ -542,13 +687,14 @@
       return temaPrioritari.response;
     }
 
-    if (temes.length > CONFIG.MAX_TEMES_COMBINABLES) {
+    if (temes.length > CONFIG.TEMES_MAXIM_ABSOLUT) {
       return RESPOSTA_AMBIGUA;
     }
 
     let text = temes.length === 1 ? temes[0].response : construirRespostaCombinada(temes);
     text = afegirCridaAccio(text, temes);
     text = afegirRecordatoriMemoria(text, temes, memoria);
+    text = afegirSuggerimentTelegramSiCal(text, temes);
     return text;
   }
 
@@ -559,13 +705,13 @@
    */
   function obtenirResposta(missatgeOriginal, memoria) {
     memoria = memoria || crearMemoriaBuida();
-    const norm = normalitzar(missatgeOriginal);
+    const missatgeArrels = prepararArrels(missatgeOriginal);
 
-    const resultatPoblacio = detectarPoblacio(norm);
-    const tipusImmobleDetectat = detectarTipusImmoble(norm);
+    const resultatPoblacio = detectarPoblacio(missatgeArrels);
+    const tipusImmobleDetectat = detectarTipusImmoble(missatgeArrels);
     actualitzarMemoria(resultatPoblacio, tipusImmobleDetectat, memoria);
 
-    const temes = detectarTemes(norm);
+    const temes = detectarTemes(missatgeArrels);
     const temaPoblacio = crearTemaPoblacio(resultatPoblacio);
     if (temaPoblacio) {
       temes.push(temaPoblacio);
