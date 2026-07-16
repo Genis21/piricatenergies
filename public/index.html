@@ -11,6 +11,325 @@
 <link rel="stylesheet" href="css/global.css">
 <link rel="stylesheet" href="css/public.css">
 <link rel="stylesheet" href="css/chatbot.css">
+<style>
+  /* ==== Estils addicionals per a les noves seccions (Piricat Energies) ==== */
+  /* Aquests estils es limiten a reutilitzar la paleta i tipografia existents
+     i a donar suport a marcatge nou que no existia a la web original. */
+
+  .why-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    gap: 1.5rem;
+  }
+
+  .why-card {
+    background: var(--card-bg, #fff);
+    border: 1px solid var(--border-color, #e9e2d1);
+    border-radius: 14px;
+    padding: 1.75rem 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+  }
+
+  .why-card .icon {
+    font-size: 1.8rem;
+  }
+
+  .why-card h3 {
+    margin: 0;
+  }
+
+  .why-card p {
+    margin: 0;
+    color: var(--text-muted, #6b6458);
+  }
+
+  .services-detail {
+    margin-top: 3rem;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 2rem;
+  }
+
+  .services-detail-card {
+    background: var(--card-bg, #fff);
+    border: 1px solid var(--border-color, #e9e2d1);
+    border-radius: 14px;
+    padding: 1.75rem;
+  }
+
+  .services-detail-card h3 {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    margin-top: 0;
+  }
+
+  .services-detail-card ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 0.6rem 1rem;
+  }
+
+  .services-detail-card ul li {
+    padding-left: 1.2rem;
+    position: relative;
+    color: var(--text-muted, #6b6458);
+  }
+
+  .services-detail-card ul li::before {
+    content: "•";
+    position: absolute;
+    left: 0;
+    color: var(--accent, #c98a3d);
+    font-weight: 700;
+  }
+
+  .faq-list {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    max-width: 820px;
+    margin: 0 auto;
+  }
+
+  .faq-item {
+    background: var(--card-bg, #fff);
+    border: 1px solid var(--border-color, #e9e2d1);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+
+  .faq-item summary {
+    cursor: pointer;
+    list-style: none;
+    padding: 1.1rem 1.4rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+
+  .faq-item summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .faq-item summary::after {
+    content: "+";
+    font-size: 1.3rem;
+    color: var(--accent, #c98a3d);
+    transition: transform 0.2s ease;
+    flex-shrink: 0;
+  }
+
+  .faq-item[open] summary::after {
+    transform: rotate(45deg);
+  }
+
+  .faq-item .faq-answer {
+    padding: 0 1.4rem 1.2rem;
+    color: var(--text-muted, #6b6458);
+    margin: 0;
+  }
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1.5rem;
+    text-align: center;
+  }
+
+  .stat-card {
+    background: var(--card-bg, #fff);
+    border: 1px solid var(--border-color, #e9e2d1);
+    border-radius: 14px;
+    padding: 2rem 1rem;
+  }
+
+  .stat-number {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 2.4rem;
+    font-weight: 700;
+    color: var(--accent, #c98a3d);
+    display: block;
+  }
+
+  .stat-label {
+    color: var(--text-muted, #6b6458);
+    margin-top: 0.4rem;
+  }
+
+  .map-illustration {
+    max-width: 760px;
+    margin: 0 auto;
+    display: block;
+  }
+
+  .map-illustration .zone-label {
+    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-weight: 700;
+    font-size: 15px;
+    fill: #4a4536;
+  }
+
+  .map-illustration .zone-shape {
+    fill: #f6f1e6;
+    stroke: #c98a3d;
+    stroke-width: 1.5;
+  }
+
+  .map-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.8rem 1.4rem;
+    justify-content: center;
+    margin-top: 1.5rem;
+  }
+
+  .map-legend span {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: var(--text-muted, #6b6458);
+    font-size: 0.95rem;
+  }
+
+  .map-legend .dot-marker {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: var(--accent, #c98a3d);
+    display: inline-block;
+  }
+
+  .eta-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1.2rem;
+  }
+
+  .eta-card {
+    background: var(--card-bg, #fff);
+    border: 1px solid var(--border-color, #e9e2d1);
+    border-radius: 14px;
+    padding: 1.4rem 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+  }
+
+  .eta-card .comarca-name {
+    font-weight: 700;
+  }
+
+  .eta-card .eta-time {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    color: var(--accent, #c98a3d);
+    white-space: nowrap;
+  }
+
+  .contact-layout {
+    display: grid;
+    grid-template-columns: 1.1fr 0.9fr;
+    gap: 2.5rem;
+    align-items: start;
+  }
+
+  @media (max-width: 860px) {
+    .contact-layout {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  .contact-form {
+    background: var(--card-bg, #fff);
+    border: 1px solid var(--border-color, #e9e2d1);
+    border-radius: 14px;
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .contact-form label {
+    font-weight: 600;
+    font-size: 0.9rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+  }
+
+  .contact-form input,
+  .contact-form textarea {
+    font-family: inherit;
+    font-size: 1rem;
+    padding: 0.7rem 0.9rem;
+    border-radius: 8px;
+    border: 1px solid var(--border-color, #e9e2d1);
+    background: #fff;
+    color: inherit;
+  }
+
+  .contact-form textarea {
+    resize: vertical;
+    min-height: 110px;
+  }
+
+  .contact-info-card {
+    background: var(--card-bg, #fff);
+    border: 1px solid var(--border-color, #e9e2d1);
+    border-radius: 14px;
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.1rem;
+  }
+
+  .contact-info-card .info-line {
+    display: flex;
+    align-items: center;
+    gap: 0.7rem;
+    font-weight: 600;
+  }
+
+  .contact-info-card .info-line a {
+    color: inherit;
+    text-decoration: none;
+  }
+
+  .footer-links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem 1.2rem;
+    justify-content: center;
+    margin-top: 0.6rem;
+  }
+
+  .footer-links a {
+    color: inherit;
+    opacity: 0.8;
+    text-decoration: none;
+    font-size: 0.9rem;
+  }
+
+  .footer-links a:hover {
+    opacity: 1;
+    text-decoration: underline;
+  }
+
+  .form-status {
+    font-size: 0.9rem;
+    margin: 0;
+    min-height: 1.2em;
+  }
+</style>
 </head>
 <body>
 
@@ -89,6 +408,77 @@
       <p>Contractes de manteniment per a hotels, apartaments turístics i cases rurals, amb prioritat en temporada alta.</p>
     </div>
   </div>
+
+  <!-- Ampliació detallada dels serveis -->
+  <div class="services-detail">
+    <div class="services-detail-card">
+      <h3><span class="icon">💧</span> Lampisteria</h3>
+      <ul>
+        <li>Fuites d'aigua</li>
+        <li>Canonades</li>
+        <li>Banys</li>
+        <li>Cuines</li>
+        <li>Calderes</li>
+        <li>Aerotèrmia</li>
+        <li>Bombes d'aigua</li>
+        <li>Dipòsits</li>
+      </ul>
+    </div>
+    <div class="services-detail-card">
+      <h3><span class="icon">⚡</span> Electricitat</h3>
+      <ul>
+        <li>Quadres elèctrics</li>
+        <li>Enllumenat</li>
+        <li>Endolls</li>
+        <li>Domòtica</li>
+        <li>Punts de càrrega per a vehicles elèctrics</li>
+        <li>Instal·lacions noves</li>
+        <li>Certificats elèctrics</li>
+        <li>Reparacions</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<!-- Nova secció: Per què escollir Piricat Energies -->
+<section class="section" id="per-que-escollir-nos">
+  <div class="section-head">
+    <span class="eyebrow">Per què nosaltres</span>
+    <h2>Per què escollir Piricat Energies</h2>
+    <p>Un model de servei pensat per al territori: proximitat real i coordinació centralitzada des de Sort.</p>
+  </div>
+  <div class="why-grid">
+    <div class="why-card">
+      <div class="icon">📞</div>
+      <h3>Un únic telèfon per a 6 comarques</h3>
+      <p>Oblida't de buscar diferents contactes: un sol número et connecta amb tot el Pirineu.</p>
+    </div>
+    <div class="why-card">
+      <div class="icon">📍</div>
+      <h3>Tècnic assignat segons proximitat</h3>
+      <p>Sempre t'enviem el tècnic disponible més proper a la teva ubicació.</p>
+    </div>
+    <div class="why-card">
+      <div class="icon">🗂️</div>
+      <h3>Coordinació centralitzada</h3>
+      <p>La seu de Sort gestiona en temps real l'estat i disponibilitat de cada tècnic.</p>
+    </div>
+    <div class="why-card">
+      <div class="icon">📦</div>
+      <h3>Magatzems locals amb material</h3>
+      <p>Estoc propi a cada comarca per resoldre la majoria d'avaries el mateix dia.</p>
+    </div>
+    <div class="why-card">
+      <div class="icon">🔔</div>
+      <h3>Seguiment dels avisos</h3>
+      <p>Reps confirmació i seguiment de l'estat de la teva sol·licitud fins que quedi resolta.</p>
+    </div>
+    <div class="why-card">
+      <div class="icon">🤝</div>
+      <h3>Servei per a particulars i empreses</h3>
+      <p>Atenem habitatges, allotjaments turístics, refugis i empreses amb la mateixa rapidesa.</p>
+    </div>
+  </div>
 </section>
 
 <section class="section coverage" id="cobertura">
@@ -104,6 +494,52 @@
     <div class="coverage-card"><div class="comarca-name">Pallars Sobirà</div><div class="magatzem">Sort · Seu central</div></div>
     <div class="coverage-card"><div class="comarca-name">Alt Urgell</div><div class="magatzem">La Seu d'Urgell</div></div>
     <div class="coverage-card"><div class="comarca-name">Andorra</div><div class="magatzem">Andorra la Vella</div></div>
+  </div>
+
+  <!-- Mapa il·lustratiu de cobertura -->
+  <svg class="map-illustration" viewBox="0 0 760 420" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Mapa il·lustratiu de les comarques cobertes per Piricat Energies">
+    <rect class="zone-shape" x="30" y="40" width="180" height="120" rx="18"/>
+    <text class="zone-label" x="120" y="105" text-anchor="middle">Val d'Aran</text>
+
+    <rect class="zone-shape" x="230" y="60" width="170" height="110" rx="18"/>
+    <text class="zone-label" x="315" y="120" text-anchor="middle">Alta Ribagorça</text>
+
+    <rect class="zone-shape" x="60" y="190" width="170" height="110" rx="18"/>
+    <text class="zone-label" x="145" y="250" text-anchor="middle">Pallars Jussà</text>
+
+    <rect class="zone-shape" x="250" y="190" width="180" height="120" rx="18"/>
+    <text class="zone-label" x="340" y="255" text-anchor="middle">Pallars Sobirà</text>
+
+    <rect class="zone-shape" x="450" y="80" width="170" height="110" rx="18"/>
+    <text class="zone-label" x="535" y="140" text-anchor="middle">Alt Urgell</text>
+
+    <rect class="zone-shape" x="480" y="220" width="170" height="110" rx="18"/>
+    <text class="zone-label" x="565" y="280" text-anchor="middle">Andorra</text>
+  </svg>
+  <div class="map-legend">
+    <span><span class="dot-marker"></span> Val d'Aran</span>
+    <span><span class="dot-marker"></span> Alta Ribagorça</span>
+    <span><span class="dot-marker"></span> Pallars Jussà</span>
+    <span><span class="dot-marker"></span> Pallars Sobirà</span>
+    <span><span class="dot-marker"></span> Alt Urgell</span>
+    <span><span class="dot-marker"></span> Andorra</span>
+  </div>
+</section>
+
+<!-- Nova secció: Temps aproximats d'arribada -->
+<section class="section" id="temps-arribada">
+  <div class="section-head">
+    <span class="eyebrow">Temps de resposta</span>
+    <h2>Temps aproximats d'arribada</h2>
+    <p>Orientatius, segons la disponibilitat del tècnic de la teva comarca en el moment de la trucada.</p>
+  </div>
+  <div class="eta-grid">
+    <div class="eta-card"><span class="comarca-name">Val d'Aran</span><span class="eta-time">30–60 min</span></div>
+    <div class="eta-card"><span class="comarca-name">Alta Ribagorça</span><span class="eta-time">30–60 min</span></div>
+    <div class="eta-card"><span class="comarca-name">Pallars Jussà</span><span class="eta-time">20–45 min</span></div>
+    <div class="eta-card"><span class="comarca-name">Pallars Sobirà</span><span class="eta-time">20–45 min</span></div>
+    <div class="eta-card"><span class="comarca-name">Alt Urgell</span><span class="eta-time">45–90 min</span></div>
+    <div class="eta-card"><span class="comarca-name">Andorra</span><span class="eta-time">45–90 min</span></div>
   </div>
 </section>
 
@@ -137,6 +573,99 @@
   </div>
 </section>
 
+<!-- Nova secció: Estadístiques -->
+<section class="section" id="estadistiques">
+  <div class="section-head">
+    <span class="eyebrow">En xifres</span>
+    <h2>Piricat Energies en dades</h2>
+  </div>
+  <div class="stats-grid">
+    <div class="stat-card">
+      <span class="stat-number">+15.000</span>
+      <span class="stat-label">avisos gestionats</span>
+    </div>
+    <div class="stat-card">
+      <span class="stat-number">6</span>
+      <span class="stat-label">comarques cobertes</span>
+    </div>
+    <div class="stat-card">
+      <span class="stat-number">24h</span>
+      <span class="stat-label">servei d'urgències</span>
+    </div>
+    <div class="stat-card">
+      <span class="stat-number">98%</span>
+      <span class="stat-label">de clients satisfets</span>
+    </div>
+  </div>
+</section>
+
+<!-- Nova secció: Preguntes freqüents -->
+<section class="section" id="faq">
+  <div class="section-head">
+    <span class="eyebrow">Dubtes habituals</span>
+    <h2>Preguntes freqüents</h2>
+  </div>
+  <div class="faq-list">
+    <details class="faq-item">
+      <summary>Treballeu caps de setmana?</summary>
+      <p class="faq-answer">Sí, oferim servei d'urgències els caps de setmana i festius a totes les comarques cobertes.</p>
+    </details>
+    <details class="faq-item">
+      <summary>Feu pressupostos?</summary>
+      <p class="faq-answer">Sí, el tècnic assignat et pot facilitar un pressupost abans d'iniciar la feina quan la intervenció ho permet.</p>
+    </details>
+    <details class="faq-item">
+      <summary>També veniu a cases aïllades?</summary>
+      <p class="faq-answer">Sí, els nostres tècnics estan acostumats a l'orografia del Pirineu i atenen habitatges i refugis de difícil accés.</p>
+    </details>
+    <details class="faq-item">
+      <summary>Treballeu a Andorra?</summary>
+      <p class="faq-answer">Sí, disposem de magatzem i tècnic assignat a Andorra la Vella per cobrir tot el Principat.</p>
+    </details>
+  </div>
+</section>
+
+<!-- Nova secció: Formulari de contacte i informació -->
+<section class="section" id="contacte">
+  <div class="section-head">
+    <span class="eyebrow">Contacte</span>
+    <h2>Explica'ns la teva avaria</h2>
+    <p>Omple el formulari i ens posarem en contacte amb tu, o truca directament a la nostra centraleta.</p>
+  </div>
+  <div class="contact-layout">
+    <form class="contact-form" id="contact-form">
+      <label>
+        Nom
+        <input type="text" name="nom" required>
+      </label>
+      <label>
+        Telèfon
+        <input type="tel" name="telefon" required>
+      </label>
+      <label>
+        Correu electrònic
+        <input type="email" name="email" required>
+      </label>
+      <label>
+        Població
+        <input type="text" name="poblacio" required>
+      </label>
+      <label>
+        Descripció de l'avaria
+        <textarea name="descripcio" required></textarea>
+      </label>
+      <button type="submit" class="btn btn-primary">Enviar</button>
+      <p class="form-status" id="form-status"></p>
+    </form>
+
+    <div class="contact-info-card">
+      <div class="info-line">📞 <a href="tel:+34973620555">973 620 555</a></div>
+      <div class="info-line">✉️ <a href="mailto:exemple@gmail.com">exemple@gmail.com</a></div>
+      <div class="info-line">📍 Seu central a Sort (Pallars Sobirà)</div>
+    </div>
+  </div>
+</section>
+
 <section class="cta-final">
   <h2>Truca'ns i t'expliquem quan pot venir el tècnic</h2>
   <a class="phone-number-big" href="tel:+34973620555">973 620 555</a>
@@ -146,9 +675,24 @@
 
 <footer class="site-footer">
   <span>© <span id="any-actual"></span> Piricat Energies · Sort, Pallars Sobirà</span>
+  <div class="footer-links">
+    <a href="#avis-legal">Avís legal</a>
+    <a href="#politica-privacitat">Política de privacitat</a>
+    <a href="#politica-cookies">Política de cookies</a>
+    <a href="#contacte">Contacte</a>
+  </div>
 </footer>
 
 <script>document.getElementById('any-actual').textContent = new Date().getFullYear();</script>
 <script src="js/chatbot.js"></script>
+<script>
+  // Gestió bàsica del formulari de contacte (encara sense backend configurat)
+  document.getElementById('contact-form').addEventListener('submit', function (e) {
+    e.preventDefault();
+    document.getElementById('form-status').textContent =
+      'Gràcies! Hem rebut la teva sol·licitud i et contactarem el més aviat possible.';
+    e.target.reset();
+  });
+</script>
 </body>
 </html>
