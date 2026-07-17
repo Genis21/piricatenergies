@@ -174,7 +174,7 @@
     {
       id: "ajuda",
       etiqueta: "Ajuda",
-      keywords: ["ajuda", "què saps", "què pots fer", "què et puc preguntar", "quina informació tens", "què em pots dir", "com em pots ajudar"],
+      keywords: ["ajuda", "ajudar", "què saps", "què pots fer", "què et puc preguntar", "quina informació tens", "què em pots dir", "com em pots ajudar"],
       response:
         "Et puc ajudar amb informació sobre:<br><br>" +
         "🔧 Serveis<br>" +
